@@ -16,7 +16,7 @@ run_tests()
 
 int
 test1(){
-    struct field test_field;
+    struct finite_field test_field;
     test_field.power = 3;
     test_field.primative_in_power_n = 3;
     printf("Result: %lld\n", multiply_in_field(&test_field, 7, 2));
@@ -25,7 +25,7 @@ test1(){
 }
 
 int test2(){
-    struct field test_field;
+    struct finite_field test_field;
     test_field.power = 4;
     test_field.primative_in_power_n = 3;
     struct cyclotomic_cosets* to_free = generate_cosets_from_n_needed_elements(&test_field, 6);
@@ -34,7 +34,7 @@ int test2(){
 }
 
 int test3(){
-    struct field test_field;
+    struct finite_field test_field;
     test_field.power = 16;
     test_field.primative_in_power_n = 45;
     for(unsigned long long int i = 0; i < (1UL << 16); ++i){
@@ -44,7 +44,7 @@ int test3(){
 }
 
 int test4(){
-    struct field test_field;
+    struct finite_field test_field;
     test_field.power = 4;
     test_field.primative_in_power_n = 3;
     polynomial a;
@@ -64,7 +64,7 @@ int test4(){
 int
 test5()
 {
-    struct field test_field;
+    struct finite_field test_field;
     test_field.power = 4;
     test_field.primative_in_power_n = 3;
     int coefs1[4] = {3, 0, 15, 1};
@@ -89,7 +89,7 @@ int
 test6()
 {
     printf("Multiplication test\n");
-    struct field test_field;
+    struct finite_field test_field;
     test_field.power = 4;
     test_field.primative_in_power_n = 3;
     int coefs1[4] = {3, 0, 15, 1};
@@ -114,7 +114,7 @@ int
 test7()
 {
     printf("Minimal polynomial test");
-    struct field test_field;
+    struct finite_field test_field;
     test_field.power = 4;
     test_field.primative_in_power_n = 3;
     struct cyclotomic_cosets* to_free = generate_cosets_from_n_needed_elements(&test_field, 8);
@@ -134,7 +134,7 @@ int
 test8()
 {
     printf("Generator polynomial test\n");
-    struct field test_field;
+    struct finite_field test_field;
     test_field.power = 5;
     test_field.primative_in_power_n = 5;
 

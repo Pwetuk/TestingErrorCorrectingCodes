@@ -5,7 +5,7 @@
 
 
 struct cyclotomic_cosets*
-generate_cosets_from_n_needed_elements(struct field* field, int n)
+generate_cosets_from_n_needed_elements(struct finite_field* field, int n)
 {
     int was = 0;
     struct cyclotomic_coset** cosets_from = malloc(sizeof(struct cyclotomic_coset*) * n);
@@ -48,7 +48,7 @@ free_cosets_struct(struct cyclotomic_cosets* to_free)
 
 
 polynomial
-add_two_polynomials(struct field* field, polynomial poly1, polynomial poly2)
+add_two_polynomials(struct finite_field* field, polynomial poly1, polynomial poly2)
 {
     polynomial to_return;
     to_return = add_in_field(field, poly1, poly2);
@@ -57,7 +57,7 @@ add_two_polynomials(struct field* field, polynomial poly1, polynomial poly2)
 
 
 polynomial
-multiply_two_polynomials(struct field* field, polynomial poly1, polynomial poly2)
+multiply_two_polynomials(struct finite_field* field, polynomial poly1, polynomial poly2)
 {
     polynomial to_return = 0;
     unsigned long long int backup_poly = poly1;
@@ -75,7 +75,7 @@ multiply_two_polynomials(struct field* field, polynomial poly1, polynomial poly2
 
 
 void
-print_polynomial(struct field* field, polynomial poly)
+print_polynomial(struct finite_field* field, polynomial poly)
 {
     unsigned long long out_poly = poly;
     for(int i = 0; out_poly != 0; ++i){
@@ -131,7 +131,7 @@ copy_extended_polynomial(struct extended_polynomial* poly)
 }
 
 struct extended_polynomial*
-add_two_extended_polynomials(struct field* field, struct extended_polynomial* poly1, struct extended_polynomial* poly2)
+add_two_extended_polynomials(struct finite_field* field, struct extended_polynomial* poly1, struct extended_polynomial* poly2)
 {
     int total_degree = max(poly1->degree, poly2->degree);
     struct extended_polynomial* result = malloc(sizeof(struct extended_polynomial));
@@ -159,7 +159,7 @@ add_two_extended_polynomials(struct field* field, struct extended_polynomial* po
 }
 
 struct extended_polynomial*
-multiplty_two_extended_polynomials(struct field* field, struct extended_polynomial* poly1, struct extended_polynomial* poly2)
+multiplty_two_extended_polynomials(struct finite_field* field, struct extended_polynomial* poly1, struct extended_polynomial* poly2)
 {
     int total_degree = poly1->degree + poly2->degree;
     struct extended_polynomial* result = malloc(sizeof(struct extended_polynomial));
@@ -177,7 +177,7 @@ multiplty_two_extended_polynomials(struct field* field, struct extended_polynomi
 
 
 polynomial
-construct_minimal_polynomial_from_coset(struct field* field, struct cyclotomic_coset* coset)
+construct_minimal_polynomial_from_coset(struct finite_field* field, struct cyclotomic_coset* coset)
 {
     int base_element = coset->from_el;
 
@@ -216,7 +216,7 @@ construct_minimal_polynomial_from_coset(struct field* field, struct cyclotomic_c
 }
 
 polynomial
-extended_polynomial_to_polynomial(struct field* field, struct extended_polynomial* poly)
+extended_polynomial_to_polynomial(struct finite_field* field, struct extended_polynomial* poly)
 {
     polynomial result = 0;
     for(int i = 0; i < poly->degree; ++i){
@@ -236,7 +236,7 @@ extended_polynomial_to_polynomial(struct field* field, struct extended_polynomia
 }
 
 polynomial
-construct_generator_polynomial(struct field* field, int number_of_errors)
+construct_generator_polynomial(struct finite_field* field, int number_of_errors)
 {
     struct cyclotomic_cosets* cosets = generate_cosets_from_n_needed_elements(field, 2 * number_of_errors);
 
