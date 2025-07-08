@@ -15,3 +15,10 @@ multiply_in_field(struct finite_field* field, unsigned long long int a, unsigned
 
 unsigned long long int
 find_primitive_in_power(struct finite_field* field, unsigned long long int power);
+
+
+unsigned long long
+pow_placeholder(unsigned long long int base, int power);
+
+unsigned long long
+construct_inreverse_element(struct finite_field* field, unsigned long long element);

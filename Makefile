@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Ipaths 
+CFLAGS = -Wall -Wextra -Ipaths
 OBj_DIR = obj
 
 OBJS = $(OBj_DIR)/finite_field.o $(OBj_DIR)/polynomials.o $(OBj_DIR)/main.o $(OBj_DIR)/bch_tests.o
@@ -10,19 +10,19 @@ create_dir:
 all: create_dir main.out
 
 $(OBj_DIR)/finite_field.o: finite_field.c finite_field.h
-		$(CC) $(CFLAGS) -c -o $@ $<
+		$(CC) $(CFLAGS) -c -o $@ $<  -lm
 
 $(OBj_DIR)/polynomials.o: polynomials.c $(OBj_DIR)/finite_field.o polynomials.h
-		$(CC) $(CFLAGS) -c -o $@ $<
+		$(CC) $(CFLAGS) -c -o $@ $< -lm
 
 $(OBj_DIR)/bch_tests.o: bch_tests.c bch_tests.h $(OBj_DIR)/finite_field.o $(OBj_DIR)/polynomials.o
-		$(CC) $(CFLAGS) -c -o $@ $<
+		$(CC) $(CFLAGS) -c -o $@ $< -lm
 
 $(OBj_DIR)/main.o: main.c $(OBj_DIR)/polynomials.o $(OBj_DIR)/finite_field.o $(OBj_DIR)/bch_tests.o
-		$(CC) $(CFLAGS) -c -o $@ $<
+		$(CC) $(CFLAGS) -c -o $@ $< -lm
 
 main.out: $(OBJS)
-		$(CC) $(CFLAGS) -o $@ $^
+		$(CC) $(CFLAGS) -o $@ $^ -lm
 
 clean:
 		rm -f $(OBj_DIR)/*.o main.out

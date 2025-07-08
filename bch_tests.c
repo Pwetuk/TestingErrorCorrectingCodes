@@ -9,14 +9,16 @@ int
 run_tests()
 {
 
-    //return test1() | test2() | test4() | test5() | test6() | test7() | test8();
-    return test8();
+    //return test1() | test2() | test4() | test5() | test6() | test7() | test8() | test10();
+    //return test1() | test8() | test9();
+    return test10();
 }
 
 
 int
 test1(){
     struct finite_field test_field;
+    test_field.characteristic = 2;
     test_field.power = 3;
     test_field.primative_in_power_n = 3;
     printf("Result: %lld\n", multiply_in_field(&test_field, 7, 2));
@@ -26,6 +28,7 @@ test1(){
 
 int test2(){
     struct finite_field test_field;
+    test_field.characteristic = 2;
     test_field.power = 4;
     test_field.primative_in_power_n = 3;
     struct cyclotomic_cosets* to_free = generate_cosets_from_n_needed_elements(&test_field, 6);
@@ -35,6 +38,7 @@ int test2(){
 
 int test3(){
     struct finite_field test_field;
+    test_field.characteristic = 2;
     test_field.power = 16;
     test_field.primative_in_power_n = 45;
     for(unsigned long long int i = 0; i < (1UL << 16); ++i){
@@ -45,6 +49,7 @@ int test3(){
 
 int test4(){
     struct finite_field test_field;
+    test_field.characteristic = 2;
     test_field.power = 4;
     test_field.primative_in_power_n = 3;
     polynomial a;
@@ -65,6 +70,7 @@ int
 test5()
 {
     struct finite_field test_field;
+    test_field.characteristic = 2;
     test_field.power = 4;
     test_field.primative_in_power_n = 3;
     int coefs1[4] = {3, 0, 15, 1};
@@ -90,6 +96,7 @@ test6()
 {
     printf("Multiplication test\n");
     struct finite_field test_field;
+    test_field.characteristic = 2;
     test_field.power = 4;
     test_field.primative_in_power_n = 3;
     int coefs1[4] = {3, 0, 15, 1};
@@ -115,6 +122,7 @@ test7()
 {
     printf("Minimal polynomial test");
     struct finite_field test_field;
+    test_field.characteristic = 2;
     test_field.power = 4;
     test_field.primative_in_power_n = 3;
     struct cyclotomic_cosets* to_free = generate_cosets_from_n_needed_elements(&test_field, 8);
@@ -135,10 +143,40 @@ test8()
 {
     printf("Generator polynomial test\n");
     struct finite_field test_field;
+    test_field.characteristic = 2;
     test_field.power = 5;
     test_field.primative_in_power_n = 5;
 
     printf("Generator polynomial: %lld\n", construct_generator_polynomial(&test_field, 2));
 
+    return 0;
+}
+
+int
+test9()
+{
+
+    struct finite_field test_field;
+    test_field.characteristic = 3;
+    test_field.power = 2;
+    test_field.primative_in_power_n = 7;
+    printf("Add test: %lld\n", add_in_field(&test_field, 0, 5));
+    printf("Multiply test: %lld\n", multiply_in_field(&test_field, 1+3, 2+3));
+    return 0;
+}
+
+int
+test10()
+{   
+    printf("Test in field GF(3^5)");
+    struct finite_field test_field;
+    test_field.characteristic = 3;
+    test_field.power = 5;
+    test_field.primative_in_power_n = 25;
+
+
+    polynomial generator =  construct_generator_polynomial(&test_field, 1);
+    print_polynomial(&test_field, generator);
+    printf("Generator polynomial: %lld\n", generator);
     return 0;
 }

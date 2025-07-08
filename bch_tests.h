@@ -24,3 +24,9 @@ test7();
 
 int
 test8();
+
+int
+test9();
+
+int
+test10();

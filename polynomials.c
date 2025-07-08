@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "polynomials.h"
 
@@ -10,6 +11,7 @@ generate_cosets_from_n_needed_elements(struct finite_field* field, int n)
     int was = 0;
     struct cyclotomic_coset** cosets_from = malloc(sizeof(struct cyclotomic_coset*) * n);
     int num_of_elemets = 0;
+    unsigned long long int p = pow(field->characteristic, field->power) - 1;
     for(int i = 1; i <= n; ++i){
         if((was & (1 << i)) != 0){
             continue;
@@ -19,14 +21,26 @@ generate_cosets_from_n_needed_elements(struct finite_field* field, int n)
         cosets_from[num_of_elemets]->size = 1;
         int k = i;
         was |= (1 << i);
-        k <<= 1;
-        printf("%d, ", k);
-        while(k != i){
-            was |= (1 << k);
+        printf("%d\t", k);
+        if(field->characteristic == 2){
             k <<= 1;
-            k %= ((1 << field->power) - 1);
+        }else{
+            k *= field->characteristic;
+        }
+        while(k != i){
+            printf("%d\t", k);
+            was |= (1 << k);
+            if(field->characteristic == 2){
+                k <<= 1;
+            }else{
+                k *= field->characteristic;
+            }
+            
+            k %= p;
+
             (cosets_from[num_of_elemets]->size)++;
         }
+        printf("---------------------------------\n");
         ++num_of_elemets;
     }
     struct cyclotomic_cosets* to_return = malloc(sizeof(struct cyclotomic_cosets));
@@ -60,14 +74,27 @@ polynomial
 multiply_two_polynomials(struct finite_field* field, polynomial poly1, polynomial poly2)
 {
     polynomial to_return = 0;
-    unsigned long long int backup_poly = poly1;
+    polynomial backup_poly = poly1;
+    polynomial temp_poly2;
     int current_power = 0;
+    int p = field->characteristic;
 
     while(backup_poly > 0){
-        if(backup_poly % 2 != 0){
-            to_return = add_two_polynomials(field, to_return, (poly2 << current_power));
+        if(backup_poly % field->characteristic != 0){
+            if(field->characteristic == 2){
+                temp_poly2 = poly2 << current_power;
+                to_return = add_two_polynomials(field, to_return, temp_poly2);
+            }else{
+                for(int i = 0; (unsigned long long)i < backup_poly % field->characteristic; ++i){
+                    to_return = add_two_polynomials(field, to_return, poly2 * pow(field->characteristic, current_power));
+                }
+            }
         }
-        backup_poly >>= 1;
+        if(field->characteristic == 2){
+            backup_poly >>= 1;
+        }else{
+            backup_poly /= field->characteristic;
+        }
         current_power += 1;
     }
     return to_return;
@@ -79,10 +106,14 @@ print_polynomial(struct finite_field* field, polynomial poly)
 {
     unsigned long long out_poly = poly;
     for(int i = 0; out_poly != 0; ++i){
-        if(out_poly % 2 != 0){
-            printf("x^%d + ", i);
+        if(out_poly % field->characteristic != 0){
+            printf("%lldx^%d + ", out_poly % field->characteristic, i);
         }
-        out_poly >>= 1;
+        if(field->characteristic == 2){
+            out_poly >>= 1;
+        }else{
+            out_poly /= field->characteristic;
+        }
     }
     printf("\n");
 }
@@ -187,22 +218,25 @@ construct_minimal_polynomial_from_coset(struct finite_field* field, struct cyclo
     first_multiplier->degree = 2;
     first_multiplier->coefs = malloc(sizeof(unsigned long long int) * 2);
     first_multiplier->coefs[1] = 1;
-    first_multiplier->coefs[0] = find_primitive_in_power(field, base_element);
+    first_multiplier->coefs[0] = construct_inreverse_element(field, find_primitive_in_power(field, base_element));
 
     
     second_multiplier->degree = 2;
     second_multiplier->coefs = malloc(sizeof(unsigned long long int) * 2);
 
-
+    print_extended_polynomial(first_multiplier);
     for(int i = 0; i < coset->size - 1; ++i){
-        base_element <<= 1;
+        base_element *= field->characteristic;
         second_multiplier->coefs[1] = 1;
-        second_multiplier->coefs[0] = find_primitive_in_power(field, base_element);
+        second_multiplier->coefs[0] = construct_inreverse_element(field, find_primitive_in_power(field, base_element));
+        print_extended_polynomial(second_multiplier);
 
         temp_polynomial = multiplty_two_extended_polynomials(field, first_multiplier, second_multiplier);
         free_extended_polynomial(first_multiplier);
         
         first_multiplier = temp_polynomial;
+        printf("After multiplication:\t");
+        print_extended_polynomial(first_multiplier);
         
     }
 
@@ -220,16 +254,10 @@ extended_polynomial_to_polynomial(struct finite_field* field, struct extended_po
 {
     polynomial result = 0;
     for(int i = 0; i < poly->degree; ++i){
-        switch (poly->coefs[i])
-        {
-        case 1:
+        if(field->characteristic == 2 && poly->coefs[i] == 1){
             result += (1UL << i);
-            break;
-        case 0:
-            break;
-        default:
-            return -1;
-            break;
+        }else if(field->characteristic != 2){
+            result += poly->coefs[i] * pow(field->characteristic, i);
         }
     }
     return result;
@@ -242,9 +270,10 @@ construct_generator_polynomial(struct finite_field* field, int number_of_errors)
 
     polynomial first_multiplier, second_multiplier;
     first_multiplier = construct_minimal_polynomial_from_coset(field, cosets->cosets[0]);
+    print_polynomial(field, first_multiplier);
     for(int i = 1; i < cosets->number_of_cosets; ++i){
         second_multiplier = construct_minimal_polynomial_from_coset(field, cosets->cosets[i]);
-        //printf("Minimal polynomialials: %lld, %lld\n", first_multiplier, second_multiplier);
+        print_polynomial(field, second_multiplier);
         first_multiplier = multiply_two_polynomials(field, first_multiplier, second_multiplier);
     }
 
