@@ -21,14 +21,12 @@ generate_cosets_from_n_needed_elements(struct finite_field* field, int n)
         cosets_from[num_of_elemets]->size = 1;
         int k = i;
         was |= (1 << i);
-        printf("%d\t", k);
         if(field->characteristic == 2){
             k <<= 1;
         }else{
             k *= field->characteristic;
         }
         while(k != i){
-            printf("%d\t", k);
             was |= (1 << k);
             if(field->characteristic == 2){
                 k <<= 1;
@@ -40,7 +38,6 @@ generate_cosets_from_n_needed_elements(struct finite_field* field, int n)
 
             (cosets_from[num_of_elemets]->size)++;
         }
-        printf("---------------------------------\n");
         ++num_of_elemets;
     }
     struct cyclotomic_cosets* to_return = malloc(sizeof(struct cyclotomic_cosets));
@@ -77,7 +74,6 @@ multiply_two_polynomials(struct finite_field* field, polynomial poly1, polynomia
     polynomial backup_poly = poly1;
     polynomial temp_poly2;
     int current_power = 0;
-    int p = field->characteristic;
 
     while(backup_poly > 0){
         if(backup_poly % field->characteristic != 0){
@@ -218,25 +214,21 @@ construct_minimal_polynomial_from_coset(struct finite_field* field, struct cyclo
     first_multiplier->degree = 2;
     first_multiplier->coefs = malloc(sizeof(unsigned long long int) * 2);
     first_multiplier->coefs[1] = 1;
-    first_multiplier->coefs[0] = construct_inreverse_element(field, find_primitive_in_power(field, base_element));
+    first_multiplier->coefs[0] = construct_inverse_element_add(field, find_primitive_in_power(field, base_element));
 
     
     second_multiplier->degree = 2;
     second_multiplier->coefs = malloc(sizeof(unsigned long long int) * 2);
 
-    print_extended_polynomial(first_multiplier);
     for(int i = 0; i < coset->size - 1; ++i){
         base_element *= field->characteristic;
         second_multiplier->coefs[1] = 1;
-        second_multiplier->coefs[0] = construct_inreverse_element(field, find_primitive_in_power(field, base_element));
-        print_extended_polynomial(second_multiplier);
+        second_multiplier->coefs[0] = construct_inverse_element_add(field, find_primitive_in_power(field, base_element));
 
         temp_polynomial = multiplty_two_extended_polynomials(field, first_multiplier, second_multiplier);
         free_extended_polynomial(first_multiplier);
         
         first_multiplier = temp_polynomial;
-        printf("After multiplication:\t");
-        print_extended_polynomial(first_multiplier);
         
     }
 
@@ -270,14 +262,71 @@ construct_generator_polynomial(struct finite_field* field, int number_of_errors)
 
     polynomial first_multiplier, second_multiplier;
     first_multiplier = construct_minimal_polynomial_from_coset(field, cosets->cosets[0]);
-    print_polynomial(field, first_multiplier);
     for(int i = 1; i < cosets->number_of_cosets; ++i){
         second_multiplier = construct_minimal_polynomial_from_coset(field, cosets->cosets[i]);
-        print_polynomial(field, second_multiplier);
         first_multiplier = multiply_two_polynomials(field, first_multiplier, second_multiplier);
     }
 
     free_cosets_struct(cosets);
 
     return first_multiplier;
+}
+
+polynomial
+find_inverse_by_add_for_polynom(struct finite_field* field, polynomial a)
+{
+    polynomial result = 0;
+    int i = 0;
+    while (a != 0)
+    {
+        result += pow(field->characteristic, i) * construct_inverse_element_add(field, a % field->characteristic);
+        if(field->characteristic == 2){
+            a >>= 1;
+        }else{
+            a /= field->characteristic;
+        }
+        ++i;
+    }
+    return result;
+}
+
+polynomial
+difference_of_two_polynomials(struct finite_field* field, polynomial a, polynomial b)
+{
+    return add_two_polynomials(field, a, find_inverse_by_add_for_polynom(field, b));
+}
+
+int
+polynomial_degree(struct finite_field* field, polynomial a)
+{
+    int i = 0;
+    while (a != 0)
+    {
+        if(field->characteristic == 2){
+            a >>= 1;
+        }else{
+            a /= field->characteristic;
+        }
+        ++i;
+    }
+    return i;
+}
+
+void
+divide_polynomials_with_remainder(struct finite_field* field, polynomial dividing, polynomial divider, polynomial* result, polynomial* remainder)
+{
+    *result = 0;
+    int d1 = polynomial_degree(field, dividing), d2 = polynomial_degree(field, divider);
+    divider = divider * pow(field->characteristic, d1 - d2);
+    unsigned long long thresh_hold = pow(field->characteristic, d1 - 1);
+    while(d1 >= d2){
+        while(dividing >= thresh_hold) {
+            dividing = difference_of_two_polynomials(field, dividing, divider);
+            *result = add_two_polynomials(field, *result, pow(field->characteristic, d1 - d2));
+        }
+        --d1;
+        thresh_hold /= field->characteristic;
+        divider /= field->characteristic;
+    }
+    *remainder = dividing;
 }

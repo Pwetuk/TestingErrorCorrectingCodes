@@ -21,4 +21,7 @@ unsigned long long
 pow_placeholder(unsigned long long int base, int power);
 
 unsigned long long
-construct_inreverse_element(struct finite_field* field, unsigned long long element);
+construct_inverse_element_add(struct finite_field* field, unsigned long long element);
+
+unsigned long long
+construct_inverse_element_multiply(struct finite_field* field, unsigned long long element);

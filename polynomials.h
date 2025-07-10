@@ -75,3 +75,16 @@ extended_polynomial_to_polynomial(struct finite_field* field, struct extended_po
 
 polynomial
 construct_generator_polynomial(struct finite_field* field, int number_of_errors);
+
+
+polynomial
+find_inverse_by_add_for_polynom(struct finite_field* field, polynomial a);
+
+int
+polynomial_degree(struct finite_field* field, polynomial a);
+
+polynomial
+difference_of_two_polynomials(struct finite_field* field, polynomial a, polynomial b);
+
+void
+divide_polynomials_with_remainder(struct finite_field* field, polynomial dividing, polynomial divider, polynomial* result, polynomial* remainder);

@@ -3,21 +3,6 @@
 
 #include "finite_field.h"
 
-unsigned long long
-pow_placeholder(unsigned long long int base, int power)
-{
-    if(power == 0){
-        return 1;
-    }
-    if(power == 1){
-        return base;
-    }
-    if(power % 2 == 0){
-        unsigned long long int a = pow_placeholder(base, power / 2);
-        return a * a;
-    }
-    return base * pow_placeholder(base, power - 1);
-}
 
 unsigned long long
 add_in_field(struct finite_field* field, unsigned long long a, unsigned long long b)
@@ -91,7 +76,7 @@ find_primitive_in_power(struct finite_field* field, unsigned long long power)
 }
 
 unsigned long long
-construct_inreverse_element(struct finite_field* field, unsigned long long element)
+construct_inverse_element_add(struct finite_field* field, unsigned long long element)
 {
     if(field->characteristic == 2) return element;
     unsigned long long element_copy = element;
@@ -105,4 +90,11 @@ construct_inreverse_element(struct finite_field* field, unsigned long long eleme
         ++i;
     }
     return result;
+}
+
+unsigned long long
+construct_inverse_element_multiply(struct finite_field* field, unsigned long long element)
+{
+    unsigned long long result = 0;
+    
 }
