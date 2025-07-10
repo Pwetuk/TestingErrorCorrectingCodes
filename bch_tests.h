@@ -2,31 +2,19 @@ int
 run_tests();
 
 int
-test1();
+test_in_characteristics_2_first();
 
 int
-test2();
+test_in_characteristics_2_second();
 
 int
-test3();
+test_in_characteristics_2_third();
 
 int
-test4();
+test_in_characteristics_n_first();
 
 int
-test5();
+test_in_characteristics_n_second();
 
 int
-test6();
-
-int
-test7();
-
-int
-test8();
-
-int
-test9();
-
-int
-test10();
+test_in_characteristics_n_third();
