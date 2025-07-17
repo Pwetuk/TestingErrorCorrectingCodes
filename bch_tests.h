@@ -41,3 +41,18 @@ temp_test5();
 
 int
 encode_test1();
+
+int
+syndrom_test();
+
+int
+locator_test();
+
+int
+inverse_test();
+
+int
+chien_test();
+
+int
+decode_test();

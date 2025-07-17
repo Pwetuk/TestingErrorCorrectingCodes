@@ -61,9 +61,14 @@ multiply_in_field(struct finite_field* field, unsigned long long a, unsigned lon
 }
 
 unsigned long long
-find_primitive_in_power(struct finite_field* field, unsigned long long power)
+find_primitive_in_power(struct finite_field* field, int power)
 {
-    if(power < field->power){
+    if(power < 0){
+        unsigned long long int temp = find_primitive_in_power(field, -power);
+        //printf("Negative power is: %lld\n", temp);
+        return construct_inverse_element_multiply(field, temp);
+    }
+    if((unsigned long long)power < field->power){
         if(field->characteristic == 2){
             return (1 << power);
         }
@@ -93,8 +98,9 @@ construct_inverse_element_add(struct finite_field* field, unsigned long long ele
 }
 
 unsigned long long
-construct_inverse_element_multiply(struct finite_field* field, unsigned long long element)
+get_primitive_polynomial(struct finite_field* field)
 {
-    unsigned long long result = 0;
-    
+    unsigned long long result = pow(field->characteristic, field->power);
+    result += construct_inverse_element_add(field, field->primative_in_power_n);
+    return result;
 }
