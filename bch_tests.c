@@ -287,8 +287,8 @@ int
 temp_test3()
 {
     int result = 0;
-    struct finite_field* res = construct_gf_p_m(3, 2);
-    if(res->primative_in_power_n == 7){
+    struct finite_field* res = construct_gf_p_m(2, 5);
+    if(res->primative_in_power_n == 5){
         
         result = 1;
     }
@@ -299,10 +299,7 @@ temp_test3()
 int
 encode_test1()
 {
-    struct finite_field test_field;
-    test_field.characteristic = 2;
-    test_field.power = 5;
-    test_field.primative_in_power_n = 5;
+    struct bch_code* bch = init_bch(2, 5, 3);
 
     struct extended_polynomial message;
 
@@ -312,18 +309,13 @@ encode_test1()
     message.coefs = coefficients_msg;
     
 
+    
     unsigned long long int coefficients_encoded[31] = {0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1};
     struct extended_polynomial encoded;
     encoded.degree = 31;
     encoded.coefs = coefficients_encoded;
 
-    struct extended_polynomial* generator = construct_generator_polynomial(&test_field, 3);
-    struct extended_polynomial* result = encode_bch(&test_field, generator, &message, pow(test_field.characteristic, test_field.power) - 1, message.degree);
-    
-    if(result == NULL){
-        free_extended_polynomial(generator);
-        return 0;
-    }
+    struct extended_polynomial* result = encode_bch(bch, &message);
 
     int test_result = equal_polynomials(&encoded, result);
 
@@ -332,10 +324,9 @@ encode_test1()
         printf("Encode test failed\n");
         print_extended_polynomial(result);
     }
-    
-    free_extended_polynomial(generator);
-    
+        
     free_extended_polynomial(result);
+    //free_bch_code(bch);
 
     return test_result;
 }
@@ -458,21 +449,16 @@ chien_test(){
 
 int
 decode_test(){
-    struct finite_field test_field;
-    test_field.characteristic = 2;
-    test_field.power = 5;
-    test_field.primative_in_power_n = 5; 
-    
-    int result = 1;
+    struct bch_code* bch = init_bch(2, 5, 3);
 
-    int message_length = 16;
+    int result = 1;
 
     unsigned long long int coefficients[31] = {1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1};
     struct extended_polynomial encoded;
     encoded.degree = 31;
     encoded.coefs = coefficients;
 
-    unsigned long long data = decode_bch(&test_field, &encoded, 3, message_length), true_data = 45967;
+    unsigned long long data = decode_bch(bch, &encoded), true_data = 45967;
 
     result = (data == 45967);
     if(result != 1){

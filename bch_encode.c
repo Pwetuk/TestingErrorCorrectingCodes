@@ -6,13 +6,14 @@
 
 
 struct extended_polynomial*
-encode_bch(struct finite_field* field, struct extended_polynomial* generator, struct extended_polynomial* data, int n, int degree_data)
+encode_bch(struct bch_code* bch_code_struct, struct extended_polynomial* data)
 {
+    unsigned long long n = pow(bch_code_struct->field->characteristic, bch_code_struct->field->power);
     struct extended_polynomial* result;
-    data = multiply_extended_polynomial_by_x_n(data, n - degree_data, 0);
+    data = multiply_extended_polynomial_by_x_n(data, n - data->degree, 0);
     struct extended_polynomial *quotient = NULL, *remainder = NULL;
-    divide_polynomials_with_remainder(field, data, generator, &quotient, &remainder);
-    result = difference_of_two_polynomials(field, data, remainder);
+    divide_polynomials_with_remainder(bch_code_struct->field, data, bch_code_struct->generator, &quotient, &remainder);
+    result = difference_of_two_polynomials(bch_code_struct->field, data, remainder);
     if(quotient == NULL){
         printf("Something went horribly wrong\n");
     }
@@ -25,18 +26,18 @@ encode_bch(struct finite_field* field, struct extended_polynomial* generator, st
 }
 
 unsigned long long
-decode_bch(struct finite_field* field, struct extended_polynomial* message, int number_of_errors, int original_data_length)
+decode_bch(struct bch_code* bch_code_struct, struct extended_polynomial* message)
 {
-    long long unsigned int* syndrome = calculate_syndrome(field, message, number_of_errors);
+    long long unsigned int* syndrome = calculate_syndrome(bch_code_struct->field, message, bch_code_struct->number_of_errors);
 
-    struct extended_polynomial* locator = construct_locator_polynomial(field, syndrome, number_of_errors);
+    struct extended_polynomial* locator = construct_locator_polynomial(bch_code_struct->field, syndrome, bch_code_struct->number_of_errors);
 
-    int* errors_pos = chien_search(field, locator, number_of_errors);
+    int* errors_pos = chien_search(bch_code_struct->field, locator, bch_code_struct->number_of_errors);
 
-    fix_errors_in_bch_binary(message, errors_pos, number_of_errors);
+    fix_errors_in_bch_binary(message, errors_pos, bch_code_struct->number_of_errors);
 
     unsigned long long data = 0;
-    for(int i = 0; i < original_data_length; ++i){
+    for(int i = 0; i < bch_code_struct->data_length; ++i){
         data <<= 1;
         data += message->coefs[message->degree - i - 1];
     }
@@ -141,4 +142,26 @@ fix_errors_in_bch_binary(struct extended_polynomial* codeword, int* errors_pos, 
         }
         codeword->coefs[errors_pos[i]] ^= 1;
     }
+}
+
+struct bch_code*
+init_bch(unsigned long long p, unsigned long long power, int number_of_errors)
+{
+    struct bch_code* to_return = malloc(sizeof(struct bch_code));
+    printf("Alloced for bch code\n");
+    to_return->field = construct_gf_p_m(p, power);
+    printf("Constructed field\n");
+    to_return->number_of_errors = number_of_errors;
+    to_return->generator = construct_generator_polynomial(to_return->field, number_of_errors);
+    print_extended_polynomial(to_return->generator);
+    to_return->data_length = pow(to_return->field->characteristic, to_return->field->power) - to_return->generator->degree;
+    return to_return;
+}
+
+void
+free_bch_code(struct bch_code* bch_code_struct)
+{
+    free(bch_code_struct->field);
+    free_extended_polynomial(bch_code_struct->generator);
+    free(bch_code_struct);
 }

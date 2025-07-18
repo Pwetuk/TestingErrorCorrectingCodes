@@ -11,9 +11,6 @@ struct finite_field{
     unsigned long long int primative_in_power_n;
 };
 
-struct finite_field*
-generate_field(unsigned long long int power);
-
 unsigned long long int
 add_in_field(struct finite_field* field, unsigned long long int a, unsigned long long int b);
 

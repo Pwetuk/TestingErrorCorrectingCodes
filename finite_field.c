@@ -112,8 +112,9 @@ construct_gf_p_m(unsigned long long characteristic, unsigned long long power)
 {
     unsigned long long possible_polynomial = (unsigned long long) pow((double)characteristic, (double)power);
     for(unsigned long long i = 1; i < possible_polynomial; ++i){
-        if(check_if_irreducible(possible_polynomial + i, characteristic, power) == true){
-            if(check_if_primitive(possible_polynomial + i, characteristic, power) == true){
+        printf("Irreducible: %lld\n", possible_polynomial + i);
+        if(check_if_irreducible(possible_polynomial + i, characteristic, power) == 1){
+            if(check_if_primitive(possible_polynomial + i, characteristic, power) == 1){
                 struct finite_field* result = malloc(sizeof(struct finite_field));
                 result->characteristic = characteristic;
                 result->power = power;
@@ -135,10 +136,15 @@ check_if_irreducible(unsigned long long possible_polynomial, unsigned long long 
     struct extended_polynomial *s0, *t0, *r0;
     bool result = 1;
     for(unsigned long long i = 1; i < m; ++i){
+        print_extended_polynomial(construct_polynomial_from_field_element(&check_field, possible_polynomial));
         extended_euclidean_algorithm(&check_field, construct_polynomial_from_field_element(&check_field, possible_polynomial), 
         get_polynomial_for_irruducuble(p, i), &s0, &t0, &r0
         );
         
+        if(possible_polynomial == 37){
+            printf("d: %llu\n", i);
+            print_extended_polynomial(s0);
+        }
         free_extended_polynomial(s0);
         free_extended_polynomial(t0);
         if(r0->degree != 1 || r0->coefs[0] != 1){
@@ -198,8 +204,8 @@ find_prime_divisors(unsigned long long n, int *length)
         primes[count] = 2;
         ++count;
         if(count >= size){
-            new_primes = realloc(primes, sizeof(unsigned long long) * size * 2);
-            
+            new_primes = malloc(sizeof(unsigned long long) * size * 2);
+            memcpy(new_primes, primes, size);
             size *= 2;
             free(primes);
             primes = new_primes;
@@ -214,8 +220,8 @@ find_prime_divisors(unsigned long long n, int *length)
         if (n % d == 0) {
             primes[count] = d;
             if(count >= size){
-                new_primes = realloc(primes, sizeof(unsigned long long) * size * 2);
-                
+                new_primes = malloc(sizeof(unsigned long long) * size * 2);
+                memcpy(new_primes, primes, size);
                 size *= 2;
                 free(primes);
                 primes = new_primes;
