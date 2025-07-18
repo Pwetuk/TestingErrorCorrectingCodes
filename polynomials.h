@@ -113,4 +113,8 @@ get_field_el_from_polynomial(struct finite_field* field, struct extended_polynom
 struct extended_polynomial*
 multiply_polynomial_by_element(struct finite_field* field, struct extended_polynomial* poly, unsigned long long int el, int need_free);
 
+void
+extended_euclidean_algorithm(struct finite_field* field, struct extended_polynomial* el, struct extended_polynomial* f, 
+    struct extended_polynomial** s0, struct extended_polynomial** t0, struct extended_polynomial** r0);
+
 #endif

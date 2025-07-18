@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <math.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "finite_field.h"
 
@@ -65,7 +68,6 @@ find_primitive_in_power(struct finite_field* field, int power)
 {
     if(power < 0){
         unsigned long long int temp = find_primitive_in_power(field, -power);
-        //printf("Negative power is: %lld\n", temp);
         return construct_inverse_element_multiply(field, temp);
     }
     if((unsigned long long)power < field->power){
@@ -103,4 +105,134 @@ get_primitive_polynomial(struct finite_field* field)
     unsigned long long result = pow(field->characteristic, field->power);
     result += construct_inverse_element_add(field, field->primative_in_power_n);
     return result;
+}
+
+struct finite_field*
+construct_gf_p_m(unsigned long long characteristic, unsigned long long power)
+{
+    unsigned long long possible_polynomial = (unsigned long long) pow((double)characteristic, (double)power);
+    for(unsigned long long i = 1; i < possible_polynomial; ++i){
+        if(check_if_irreducible(possible_polynomial + i, characteristic, power) == true){
+            if(check_if_primitive(possible_polynomial + i, characteristic, power) == true){
+                struct finite_field* result = malloc(sizeof(struct finite_field));
+                result->characteristic = characteristic;
+                result->power = power;
+                result->primative_in_power_n = construct_inverse_element_add(result, i);
+                return result;
+            }
+        }
+    }
+    return NULL;
+}
+
+int
+check_if_irreducible(unsigned long long possible_polynomial, unsigned long long p, unsigned long long m)
+{
+    struct finite_field check_field;
+    check_field.characteristic = p;
+    check_field.power = 1;
+    check_field.primative_in_power_n = 100;
+    struct extended_polynomial *s0, *t0, *r0;
+    bool result = 1;
+    for(unsigned long long i = 1; i < m; ++i){
+        extended_euclidean_algorithm(&check_field, construct_polynomial_from_field_element(&check_field, possible_polynomial), 
+        get_polynomial_for_irruducuble(p, i), &s0, &t0, &r0
+        );
+        
+        free_extended_polynomial(s0);
+        free_extended_polynomial(t0);
+        if(r0->degree != 1 || r0->coefs[0] != 1){
+            result = 0;
+            free_extended_polynomial(r0);
+            break;
+        }
+        free_extended_polynomial(r0);
+        
+    }
+    return result;
+}
+
+
+struct extended_polynomial*
+get_polynomial_for_irruducuble(unsigned long long p, unsigned long long d)
+{
+    struct extended_polynomial* result = make_zero_polynomial(1);
+    result->degree = 1;
+    result->coefs[0] = 1;
+    result = multiply_extended_polynomial_by_x_n(result, pow(p, d), NEED_FREE);
+    result->coefs[1] += p - 1;
+    return result;
+}
+
+int
+check_if_primitive(unsigned long long possible_polynomial, unsigned long long p, unsigned long long m)
+{
+    unsigned long long int n = (unsigned long long)pow((double)p, (double)m);
+
+    int result = 1;
+
+    struct finite_field test_field;
+    test_field.characteristic = p;
+    test_field.power = m;
+    test_field.primative_in_power_n = construct_inverse_element_add(&test_field, possible_polynomial - n);
+    int len_primes = 0;
+    unsigned long long *primes = find_prime_divisors(n - 1, &len_primes);
+
+    for(int i = 0; i < len_primes; ++i){
+        if(find_primitive_in_power(&test_field, n/primes[i]) == 1){
+            result = 0;
+            break;
+        }
+    }
+    free(primes);
+    return result;
+}
+
+unsigned long long*
+find_prime_divisors(unsigned long long n, int *length)
+{
+    unsigned long long *primes = malloc(sizeof(unsigned long long) * 64), *new_primes;
+    int size = 64, count = 0;
+
+    if (n % 2 == 0) {
+        primes[count] = 2;
+        ++count;
+        if(count >= size){
+            new_primes = realloc(primes, sizeof(unsigned long long) * size * 2);
+            
+            size *= 2;
+            free(primes);
+            primes = new_primes;
+        }
+        while (n % 2 == 0) {
+            n >>= 1;
+        }
+    }
+    
+    unsigned long long limit = (unsigned long long) sqrt(n);
+    for (unsigned long long d = 3; d <= limit; d += 2) {
+        if (n % d == 0) {
+            primes[count] = d;
+            if(count >= size){
+                new_primes = realloc(primes, sizeof(unsigned long long) * size * 2);
+                
+                size *= 2;
+                free(primes);
+                primes = new_primes;
+            }
+            ++count;
+            while (n % d == 0) {
+                n /= d;
+            }
+            limit = (unsigned long long) sqrt(n);
+        }
+    }
+
+    if (n > 1) {
+        primes[count] = n;
+        ++count;
+
+    }
+    *length = count;
+    return primes;
 }

@@ -372,69 +372,64 @@ make_zero_polynomial(int degree){
     return result;
 }
 
-unsigned long long
-construct_inverse_element_multiply(struct finite_field* field, unsigned long long el)
+void
+extended_euclidean_algorithm(struct finite_field* field, struct extended_polynomial* el, struct extended_polynomial* f, 
+    struct extended_polynomial** s0, struct extended_polynomial** t0, struct extended_polynomial** r0)
 {
-    struct extended_polynomial* r1 = construct_polynomial_from_field_element(field, el);
-    print_extended_polynomial(r1);
-    struct extended_polynomial* r0 = construct_polynomial_from_field_element(field, get_primitive_polynomial(field));
-    struct extended_polynomial* s0 = make_zero_polynomial(1);
-    struct extended_polynomial* t0 = make_zero_polynomial(1); 
+    *r0 = copy_extended_polynomial(el);
+    *s0 = make_zero_polynomial(1);
+    *t0 = make_zero_polynomial(1); 
+    
+    struct extended_polynomial* r1 = copy_extended_polynomial(f);
     struct extended_polynomial* s1 = make_zero_polynomial(1);
     struct extended_polynomial* t1 = make_zero_polynomial(1);
     struct extended_polynomial* q, *r, *temp;
-    s0->coefs[0] = 1;
+    (*s0)->coefs[0] = 1;
     t1->coefs[0] = 1;
 
-    s0->degree = 1;
+    (*s0)->degree = 1;
     t1->degree = 1;
 
     while(r1->degree > 0){
-        divide_polynomials_with_remainder(field, r0, r1, &q, &r);
+        divide_polynomials_with_remainder(field, (*r0), r1, &q, &r);
         free_extended_polynomial(r);
 
-        temp = r0;
-        r0 = r1;
+        temp = (*r0);
+        (*r0) = r1;
         r1 = difference_of_two_polynomials(field, temp, multiply_two_extended_polynomials(field, q, r1));
         
         free_extended_polynomial(temp);
 
 
-        temp = s0;
-        s0 = s1;
+        temp = (*s0);
+        (*s0) = s1;
         s1 = difference_of_two_polynomials(field, temp, multiply_two_extended_polynomials(field, q, s1));
         
         free_extended_polynomial(temp);
 
-        temp = t0;
-        t0 = t1;
+        temp = (*t0);
+        (*t0) = t1;
         t1 = difference_of_two_polynomials(field, temp, multiply_two_extended_polynomials(field, q, t1));
         free_extended_polynomial(temp);
 
         free_extended_polynomial(q);
 
-        //printf("r0: \t");
-        //print_extended_polynomial(r0);
-        //printf("r1: \t");
-        //print_extended_polynomial(r1);
-        //printf("t0: \t");
-        //print_extended_polynomial(t0);
-        //printf("t1: \t");
-        //print_extended_polynomial(t1);
-        //printf("s0: \t");
-        //print_extended_polynomial(s0);
-        //printf("s1: \t");
-        //print_extended_polynomial(s1);
-
-
     }
-
-    free_extended_polynomial(r0);
     free_extended_polynomial(r1);
     free_extended_polynomial(s1);
     free_extended_polynomial(t1);
-    free_extended_polynomial(s0);
+}
 
+unsigned long long
+construct_inverse_element_multiply(struct finite_field* field, unsigned long long el)
+{
+    struct extended_polynomial* t0, *s0, *r0;
+
+    extended_euclidean_algorithm(field, construct_polynomial_from_field_element(field, get_primitive_polynomial(field)),
+        construct_polynomial_from_field_element(field, el), &s0, &t0, &r0);
+
+    free_extended_polynomial(s0);
+    free_extended_polynomial(r0);
 
     return get_field_el_from_polynomial(field, t0, NEED_FREE);
 }

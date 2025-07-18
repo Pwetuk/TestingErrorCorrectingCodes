@@ -34,11 +34,11 @@ temp_tests()
         printf("Test2\n");
         return 0;
     }
-    /*
     if(temp_test3() != 1){
         printf("Test3\n");
         return 0;
     }
+    /*
     if(temp_test4() != 1){
         printf("Test4\n");
         return 0;
@@ -248,6 +248,9 @@ temp_test1()
     test_field.power = 5;
     test_field.primative_in_power_n = 5;
 
+    int result = 0;
+
+
     struct extended_polynomial a, b, *c, *d;
 
     unsigned long long int a1[16] = {1, 1, 0, 1};
@@ -261,76 +264,37 @@ temp_test1()
 
     divide_polynomials_with_remainder(&test_field, &a, &b, &c, &d);
 
-    print_extended_polynomial(c);
-    print_extended_polynomial(d);
+    if(c->degree == 3 && c->coefs[0] == 0 && c->coefs[1] == 1 && c->coefs[2] == 1 && d->degree == 1 && d->coefs[0] == 1) result = 1;
+    free_extended_polynomial(c);
+    free_extended_polynomial(d);
 
-    return 1;
+    return result;
 }
 
 int
 temp_test2()
 {
-
-    printf("TEST2\n");
-    polynomial quotient = 4, remainder = 1;
     struct finite_field test_field;
     test_field.characteristic = 2;
     test_field.power = 5;
     test_field.primative_in_power_n = 5;
-    unsigned long long int res = 1, temp;
+    unsigned long long int temp;
     temp = find_primitive_in_power(&test_field, -7);
-    printf("-7 %lld\n", temp);
-
-    printf("PIVO %lld\n", multiply_in_field(&test_field, temp, 16 + 8 + 4 + 2));
-    return 1;
+    return multiply_in_field(&test_field, temp, 16 + 8 + 4 + 2) == 19;
 }
     
-/*
 int
 temp_test3()
 {
-    polynomial quotient = 2 + 2 * 3, remainder = 0;
-    struct finite_field test_field;
-    test_field.characteristic = 3;
-    test_field.power = 5;
-    test_field.primative_in_power_n = 5;
-    polynomial a = 2 + 9, b = 1 + 6, c, d;
-
-    divide_polynomials_with_remainder(&test_field, a, b, &c, &d);
-
-    return (c == quotient) & (d == remainder);
+    int result = 0;
+    struct finite_field* res = construct_gf_p_m(3, 2);
+    if(res->primative_in_power_n == 7){
+        
+        result = 1;
+    }
+    free(res);
+    return result;
 }
-
-int
-temp_test4()
-{
-    polynomial quotient = 3 * 5, remainder = 2;
-    struct finite_field test_field;
-    test_field.characteristic = 5;
-    test_field.power = 5;
-    test_field.primative_in_power_n = 5;
-    polynomial a = 125 * 3 + 4 * 5 + 2, b = 3 + 25, c, d;
-
-    divide_polynomials_with_remainder(&test_field, a, b, &c, &d);
-
-    return (c == quotient) & (d == remainder);
-}
-
-int
-temp_test5()
-{
-    polynomial quotient = 5 + 4 * 7 + 4 * 49, remainder = 14;
-    struct finite_field test_field;
-    test_field.characteristic = 7;
-    test_field.power = 5;
-    test_field.primative_in_power_n = 5;
-    polynomial a = 5 + 3 * 7 + 6 * 49 + 49 * 49, b = 1 + 5 * 7 + 2 * 49, c, d;
-
-    divide_polynomials_with_remainder(&test_field, a, b, &c, &d);
-
-    return (c == quotient) & (d == remainder);
-}
-*/
 
 int
 encode_test1()
@@ -481,7 +445,6 @@ chien_test(){
     int *errors = chien_search(&test_field, locator, 3);
 
     for(int i = 0; i < 3; ++i){
-        printf("%d\t", errors[i]);
         result &= (errors[i] == true_errors[i]);   
     }
 

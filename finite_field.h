@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #include "polynomials.h"
 
 #ifndef FIN_FIELD  
@@ -26,5 +28,20 @@ construct_inverse_element_add(struct finite_field* field, unsigned long long ele
 
 unsigned long long
 get_primitive_polynomial(struct finite_field* field);
+
+struct finite_field*
+construct_gf_p_m(unsigned long long characteristic, unsigned long long power);
+
+int
+check_if_irreducible(unsigned long long possible_polynomial, unsigned long long p, unsigned long long m);
+
+struct extended_polynomial*
+get_polynomial_for_irruducuble(unsigned long long p, unsigned long long d);
+
+int
+check_if_primitive(unsigned long long possible_polynomial, unsigned long long p, unsigned long long m);
+
+unsigned long long*
+find_prime_divisors(unsigned long long n, int *length);
 
 #endif

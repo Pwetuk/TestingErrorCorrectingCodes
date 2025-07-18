@@ -34,7 +34,7 @@ decode_bch(struct finite_field* field, struct extended_polynomial* message, int 
     int* errors_pos = chien_search(field, locator, number_of_errors);
 
     fix_errors_in_bch_binary(message, errors_pos, number_of_errors);
-    
+
     unsigned long long data = 0;
     for(int i = 0; i < original_data_length; ++i){
         data <<= 1;
@@ -72,7 +72,6 @@ construct_locator_polynomial(struct finite_field* field, unsigned long long* syn
         delta_r = syndrome[r];
         for(int i = 1; i <= L; ++i){
             delta_r = add_in_field(field, delta_r, multiply_in_field(field, syndrome[r - i], locator->coefs[i]));
-            printf("Temp delta_r: %lld\n", delta_r);
         }
 
         
@@ -107,7 +106,6 @@ construct_locator_polynomial(struct finite_field* field, unsigned long long* syn
 
     free_extended_polynomial(B);
 
-    print_extended_polynomial(locator);
     return locator;
 }
 
@@ -123,7 +121,6 @@ chien_search(struct finite_field* field, struct extended_polynomial* locator, in
     }
     for(unsigned long long i = 0; i < n - 1; ++i){
         pos = find_value_from_root(field, locator, -i);
-        //printf("i=%d res=%lld\n", i, pos);
         if(pos == 0){
             result[err_pos] = i;
             ++err_pos;
