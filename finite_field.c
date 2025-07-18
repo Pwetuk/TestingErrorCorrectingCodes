@@ -112,7 +112,6 @@ construct_gf_p_m(unsigned long long characteristic, unsigned long long power)
 {
     unsigned long long possible_polynomial = (unsigned long long) pow((double)characteristic, (double)power);
     for(unsigned long long i = 1; i < possible_polynomial; ++i){
-        printf("Irreducible: %lld\n", possible_polynomial + i);
         if(check_if_irreducible(possible_polynomial + i, characteristic, power) == 1){
             if(check_if_primitive(possible_polynomial + i, characteristic, power) == 1){
                 struct finite_field* result = malloc(sizeof(struct finite_field));
@@ -131,20 +130,15 @@ check_if_irreducible(unsigned long long possible_polynomial, unsigned long long 
 {
     struct finite_field check_field;
     check_field.characteristic = p;
-    check_field.power = 1;
+    check_field.power = m;
     check_field.primative_in_power_n = 100;
     struct extended_polynomial *s0, *t0, *r0;
     bool result = 1;
     for(unsigned long long i = 1; i < m; ++i){
-        print_extended_polynomial(construct_polynomial_from_field_element(&check_field, possible_polynomial));
         extended_euclidean_algorithm(&check_field, construct_polynomial_from_field_element(&check_field, possible_polynomial), 
         get_polynomial_for_irruducuble(p, i), &s0, &t0, &r0
         );
         
-        if(possible_polynomial == 37){
-            printf("d: %llu\n", i);
-            print_extended_polynomial(s0);
-        }
         free_extended_polynomial(s0);
         free_extended_polynomial(t0);
         if(r0->degree != 1 || r0->coefs[0] != 1){

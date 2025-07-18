@@ -438,9 +438,8 @@ struct extended_polynomial*
 construct_polynomial_from_field_element(struct finite_field* field, unsigned long long el)
 {
     struct extended_polynomial* result = malloc(sizeof(struct extended_polynomial));
-    result->coefs = calloc(field->power + 1, sizeof(unsigned long long));
+    unsigned long long temp_el = el;
     for(int i = 0; el != 0; ++i){
-        result->coefs[i] = el % field->characteristic;
         if(field->characteristic == 2){
             el >>= 1;
         }else{
@@ -448,6 +447,19 @@ construct_polynomial_from_field_element(struct finite_field* field, unsigned lon
         }
         result->degree = i + 1;
     }
+
+    el = temp_el;
+
+    result->coefs = calloc(result->degree + 1, sizeof(unsigned long long));
+    for(int i = 0; el != 0; ++i){
+        result->coefs[i] = el % field->characteristic;
+        if(field->characteristic == 2){
+            el >>= 1;
+        }else{
+            el /= field->characteristic;       
+        }
+    }
+
     return result;
 }
 

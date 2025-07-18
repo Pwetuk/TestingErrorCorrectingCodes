@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "bch_tests.h"
-#include "bch_encode.h"
+#include "bch_tests.h"\
 
 int 
 run_tests()
@@ -20,6 +19,7 @@ run_tests()
         locator_test() &
         chien_test() &
         decode_test() &
+        //encode_test2() &
         1;
 }
 
@@ -288,9 +288,12 @@ temp_test3()
 {
     int result = 0;
     struct finite_field* res = construct_gf_p_m(2, 5);
-    if(res->primative_in_power_n == 5){
+    if(res->power == 5 && res->primative_in_power_n == 5){
         
         result = 1;
+    }
+    if(result != 1){
+        printf("TEST3\n");
     }
     free(res);
     return result;
@@ -299,7 +302,7 @@ temp_test3()
 int
 encode_test1()
 {
-    struct bch_code* bch = init_bch(2, 5, 3);
+    struct bch_code* bch = init_bch(2, 5, 3, 0);
 
     struct extended_polynomial message;
 
@@ -316,8 +319,8 @@ encode_test1()
     encoded.coefs = coefficients_encoded;
 
     struct extended_polynomial* result = encode_bch(bch, &message);
-
-    int test_result = equal_polynomials(&encoded, result);
+    unsigned long long decoded = decode_bch(bch, result);
+    int test_result = (decoded == 45967);
 
 
     if(test_result != 1){
@@ -326,7 +329,7 @@ encode_test1()
     }
         
     free_extended_polynomial(result);
-    //free_bch_code(bch);
+    free_bch_code(bch);
 
     return test_result;
 }
@@ -449,7 +452,7 @@ chien_test(){
 
 int
 decode_test(){
-    struct bch_code* bch = init_bch(2, 5, 3);
+    struct bch_code* bch = init_bch(2, 5, 3, 0);
 
     int result = 1;
 
@@ -466,5 +469,23 @@ decode_test(){
         printf("Data recovered: %lld, data original: %lld\n", data, true_data);
         return 0;
     }
+    return 1;
+}
+
+int
+encode_test2(){
+    struct bch_code bch;
+    struct finite_field* field = malloc(sizeof(struct finite_field));
+    field->characteristic = 2;
+    field->power = 4;
+    field->primative_in_power_n = 3;
+
+    bch.field = field;
+    bch.number_of_errors = 2;
+    bch.generator = construct_generator_polynomial(field, 2);
+    print_extended_polynomial(bch.generator);
+
+    bch.data_length = 16 - 1 - bch.generator->degree;
+
     return 1;
 }

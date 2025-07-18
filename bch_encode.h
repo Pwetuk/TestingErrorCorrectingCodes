@@ -26,7 +26,7 @@ unsigned long long
 decode_bch(struct bch_code* bch_code_struct, struct extended_polynomial* message);
 
 struct bch_code*
-init_bch(unsigned long long p, unsigned long long power, int number_of_errors);
+init_bch(unsigned long long p, unsigned long long power, int number_of_errors, unsigned long long primitive);
 
 void
 free_bch_code(struct bch_code* bch_code_struct);

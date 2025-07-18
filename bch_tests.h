@@ -56,3 +56,6 @@ chien_test();
 
 int
 decode_test();
+
+int
+encode_test2();
