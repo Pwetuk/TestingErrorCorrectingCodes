@@ -143,13 +143,14 @@ check_if_irreducible(unsigned long long possible_polynomial, unsigned long long 
         
         free_extended_polynomial(s0);
         free_extended_polynomial(t0);
+        free_extended_polynomial(need_check_gcd);
+        
         if(r0->degree != 1 || r0->coefs[0] != 1){
             result = 0;
             free_extended_polynomial(r0);
             break;
         }
         free_extended_polynomial(r0);
-        free_extended_polynomial(need_check_gcd);
         
     }
     free_extended_polynomial(possible_primitive);
