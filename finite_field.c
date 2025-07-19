@@ -132,10 +132,11 @@ check_if_irreducible(unsigned long long possible_polynomial, unsigned long long 
     check_field.characteristic = p;
     check_field.power = m;
     check_field.primative_in_power_n = 100;
-    struct extended_polynomial *s0, *t0, *r0;
+    struct extended_polynomial *s0, *t0, *r0, *possible_primitive;
     bool result = 1;
     for(unsigned long long i = 1; i < m; ++i){
-        extended_euclidean_algorithm(&check_field, construct_polynomial_from_field_element(&check_field, possible_polynomial), 
+        possible_primitive = construct_polynomial_from_field_element(&check_field, possible_polynomial);
+        extended_euclidean_algorithm(&check_field, possible_primitive, 
         get_polynomial_for_irruducuble(p, i), &s0, &t0, &r0
         );
         
@@ -147,6 +148,7 @@ check_if_irreducible(unsigned long long possible_polynomial, unsigned long long 
             break;
         }
         free_extended_polynomial(r0);
+        free_extended_polynomial(possible_primitive);
         
     }
     return result;
