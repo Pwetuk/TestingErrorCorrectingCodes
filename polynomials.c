@@ -306,7 +306,7 @@ divide_polynomials_with_remainder(struct finite_field* field, struct extended_po
             }
             dividing_copy = dividing;
             dividing = add_two_extended_polynomials(field, dividing_copy, shifted_inverse);
-            if(iteration != 0) free(dividing_copy);
+            if(iteration != 0) free_extended_polynomial(dividing_copy);
             ++new_coef;
         }
         (*result)->coefs[deg_a - deg_b] = new_coef;
