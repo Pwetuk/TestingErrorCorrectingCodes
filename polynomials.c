@@ -282,11 +282,12 @@ divide_polynomials_with_remainder(struct finite_field* field, struct extended_po
 {
     int deg_a = dividing->degree - 1;
     int deg_b = divider->degree - 1;
+    int iteration = 0;
     if(deg_a < deg_b){
         *remainder = copy_extended_polynomial(dividing);
         *result = make_zero_polynomial(1);
     }
-    struct extended_polynomial* inverse_poly = find_inverse_by_add_for_polynomial(field, divider);
+    struct extended_polynomial* inverse_poly = find_inverse_by_add_for_polynomial(field, divider), *dividing_copy;
     *result = make_zero_polynomial(deg_a - deg_b + 1);
     (*result)->degree = deg_a - deg_b + 1;
     unsigned long long int new_coef = 0;
@@ -303,7 +304,9 @@ divide_polynomials_with_remainder(struct finite_field* field, struct extended_po
                 *remainder = NULL;
                 return;
             }
-            dividing = add_two_extended_polynomials(field, dividing, shifted_inverse);
+            dividing_copy = dividing;
+            dividing = add_two_extended_polynomials(field, dividing_copy, shifted_inverse);
+            if(iteration != 0) free(dividing_copy);
             ++new_coef;
         }
         (*result)->coefs[deg_a - deg_b] = new_coef;
@@ -312,9 +315,11 @@ divide_polynomials_with_remainder(struct finite_field* field, struct extended_po
         deg_a = dividing->degree - 1;
 
         free_extended_polynomial(shifted_inverse);
+        iteration = 1;
     }
     free_extended_polynomial(inverse_poly);
     *remainder = copy_extended_polynomial(dividing);
+    free(dividing);
 }
 
 
