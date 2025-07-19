@@ -23,20 +23,20 @@ int main(int argc, char** argv){
         }
         return 0;
     }
-    
+
     unsigned int characteristic;
     unsigned long long power;
-    unsigned long long to_encode, primitive;
+    unsigned long long to_encode;
     int number_of_errors;
     struct extended_polynomial* to_encode_poly;
 
-    printf("Input characteristic, power, number of errors and primitive polynomial\n");
-    scanf("%u %llu %d %llu", &characteristic, &power, &number_of_errors, &primitive);
+    printf("Input characteristic, power, number of errors polynomial\n");
+    scanf("%u %llu %d", &characteristic, &power, &number_of_errors);
 
     struct bch_code* bch_test = init_bch(characteristic, power, number_of_errors, 0);
 
 
-    printf("%lluMax value of encoded message is: %llu\n", bch_test->field->primative_in_power_n, 1ULL << bch_test->data_length);
+    printf("%lluMax value of encoded message is: %llu\n", bch_test->field->primative_in_power_n, 1ULL << (bch_test->data_length - 1));
     scanf("%llu", &to_encode);
 
     to_encode_poly = construct_polynomial_from_field_element(bch_test->field, to_encode);

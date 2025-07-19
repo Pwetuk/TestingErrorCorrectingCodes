@@ -478,8 +478,9 @@ struct extended_polynomial*
 multiply_polynomial_by_element(struct finite_field* field, struct extended_polynomial* poly, unsigned long long int el, int need_free)
 {
     struct extended_polynomial* result = copy_extended_polynomial(poly);
+    int initial = result->degree;
 
-    for(int i = 0; i < result->degree; ++i){
+    for(int i = 0; i < initial; ++i){
         result->coefs[i] = multiply_in_field(field, result->coefs[i], el);
         if(result->coefs[i] != 0) result->degree = i + 1;
     }

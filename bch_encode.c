@@ -10,7 +10,7 @@ encode_bch(struct bch_code* bch_code_struct, struct extended_polynomial* data)
 {
     unsigned long long n = pow(bch_code_struct->field->characteristic, bch_code_struct->field->power);
     struct extended_polynomial* result;
-    data = multiply_extended_polynomial_by_x_n(data, n - data->degree, 0);
+    data = multiply_extended_polynomial_by_x_n(data, n - data->degree - 1, 0);
     struct extended_polynomial *quotient = NULL, *remainder = NULL;
     divide_polynomials_with_remainder(bch_code_struct->field, data, bch_code_struct->generator, &quotient, &remainder);
     result = difference_of_two_polynomials(bch_code_struct->field, data, remainder);
@@ -40,8 +40,6 @@ decode_bch(struct bch_code* bch_code_struct, struct extended_polynomial* message
     for(int i = 0; i < bch_code_struct->data_length; ++i){
         data <<= 1;
         data += message->coefs[message->degree - i - 1];
-        //data <<= 1;
-        //data += message->coefs[message->degree - bch_code_struct->data_length + i + 1];
     }
 
     free(syndrome);
@@ -68,17 +66,15 @@ construct_locator_polynomial(struct finite_field* field, unsigned long long* syn
     struct extended_polynomial* locator = construct_extended_polynomial_from_coefs(base_coef, 1);
     struct extended_polynomial* B = construct_extended_polynomial_from_coefs(base_coef, 1);
     struct extended_polynomial* locator_old, *B_copy;
-    int L = 0, m = 1, b = 1;
-    unsigned long long delta_r;
+    int L = 0, m = 1;
+    unsigned long long delta_r, b = 1;
     for(int r = 0; r < 2 * number_of_errors; ++r){
         
         delta_r = syndrome[r];
-        for(int i = 1; i <= L; ++i){
+        for(int i = 1; i <= L && i < locator->degree; ++i){
             delta_r = add_in_field(field, delta_r, multiply_in_field(field, syndrome[r - i], locator->coefs[i]));
-        }
+        }        
 
-        
-        
         if(delta_r == 0){
             ++m;
         }else{
@@ -86,29 +82,22 @@ construct_locator_polynomial(struct finite_field* field, unsigned long long* syn
             B_copy = multiply_extended_polynomial_by_x_n(B, m, 0);
             unsigned long long coef = multiply_in_field(field, delta_r, construct_inverse_element_multiply(field, b));
             B_copy = multiply_polynomial_by_element(field, B_copy, coef, NEED_FREE);
-            locator = difference_of_two_polynomials(field, 
-                locator, B_copy);
-                free_extended_polynomial(B_copy);
-                if(2 * L <= r){
-                    L = r + 1 - L;
-                    free_extended_polynomial(B);
-                    B = copy_extended_polynomial(locator_old);
-                    b = delta_r;
-                    m = 1;
-                }else{
-                    ++m;
-                }
-                free_extended_polynomial(locator_old);
+            locator = difference_of_two_polynomials(field, locator, B_copy);
+            free_extended_polynomial(B_copy);
+            if(2 * L <= r){
+                L = r + 1 - L;
+                free_extended_polynomial(B);
+                B = copy_extended_polynomial(locator_old);
+                b = delta_r;
+                m = 1;  
+            }else{
+                ++m;
+            }
+            free_extended_polynomial(locator_old);
         }
-        //printf("deltar_r: %lld\n", delta_r);
-        //printf("Locator is: \t");
-        //print_extended_polynomial(locator);
-        //printf("B is: \t");
-        //print_extended_polynomial(B);
     }
 
     free_extended_polynomial(B);
-
     return locator;
 }
 
@@ -162,8 +151,6 @@ init_bch(unsigned long long p, unsigned long long power, int number_of_errors, u
 
     to_return->number_of_errors = number_of_errors;
     to_return->generator = construct_generator_polynomial(to_return->field, number_of_errors);
-    printf("Generator polynomial:\t");
-    print_extended_polynomial(to_return->generator);
     to_return->data_length = pow(to_return->field->characteristic, to_return->field->power) - to_return->generator->degree;
     return to_return;
 }

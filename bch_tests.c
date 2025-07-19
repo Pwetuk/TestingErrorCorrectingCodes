@@ -310,13 +310,6 @@ encode_test1()
 
     message.degree = 16;
     message.coefs = coefficients_msg;
-    
-
-    
-    unsigned long long int coefficients_encoded[31] = {0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1};
-    struct extended_polynomial encoded;
-    encoded.degree = 31;
-    encoded.coefs = coefficients_encoded;
 
     struct extended_polynomial* result = encode_bch(bch, &message);
     unsigned long long decoded = decode_bch(bch, result);
