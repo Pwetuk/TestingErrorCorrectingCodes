@@ -59,9 +59,7 @@ free_cosets_struct(struct cyclotomic_cosets* to_free)
 void
 free_extended_polynomial(struct extended_polynomial* to_free)
 {
-    //printf("Freeing %lld\n", to_free->coefs);
     free(to_free->coefs);
-    //printf("After coefs\n");
     free(to_free);
 }
 
@@ -165,7 +163,7 @@ construct_minimal_polynomial_from_coset(struct finite_field* field, struct cyclo
 
     struct extended_polynomial* first_multiplier = malloc(sizeof(struct extended_polynomial));
     struct extended_polynomial* second_multiplier = malloc(sizeof(struct extended_polynomial));
-    struct extended_polynomial* temp_polynomial;
+    struct extended_polynomial* to_clear;
     first_multiplier->degree = 2;
     first_multiplier->coefs = malloc(sizeof(unsigned long long int) * 2);
     first_multiplier->coefs[1] = 1;
@@ -179,10 +177,10 @@ construct_minimal_polynomial_from_coset(struct finite_field* field, struct cyclo
         second_multiplier->coefs[1] = 1;
         second_multiplier->coefs[0] = construct_inverse_element_add(field, find_primitive_in_power(field, base_element));
 
-        temp_polynomial = multiply_two_extended_polynomials(field, first_multiplier, second_multiplier);
-        free_extended_polynomial(first_multiplier);
+        to_clear = first_multiplier;
+        first_multiplier = multiply_two_extended_polynomials(field, to_clear, second_multiplier);
+        free_extended_polynomial(to_clear);
         
-        first_multiplier = temp_polynomial;
         
     }
 
@@ -210,17 +208,19 @@ construct_generator_polynomial(struct finite_field* field, int number_of_errors)
 {
     struct cyclotomic_cosets* cosets = generate_cosets_from_n_needed_elements(field, 2 * number_of_errors);
 
-    struct extended_polynomial* first_multiplier, *second_multiplier;
+    struct extended_polynomial* first_multiplier, *second_multiplier, *to_clear;
     first_multiplier = construct_minimal_polynomial_from_coset(field, cosets->cosets[0]);
     for(int i = 1; i < cosets->number_of_cosets; ++i){
         second_multiplier = construct_minimal_polynomial_from_coset(field, cosets->cosets[i]);
-        first_multiplier = multiply_two_extended_polynomials(field, first_multiplier, second_multiplier);
+        to_clear = first_multiplier;
+        first_multiplier = multiply_two_extended_polynomials(field, to_clear, second_multiplier);
+        free_extended_polynomial(to_clear);
+        free_extended_polynomial(second_multiplier);
     }
 
     free_cosets_struct(cosets);
 
 
-    free_extended_polynomial(second_multiplier);
 
     return first_multiplier;
 }
@@ -286,6 +286,7 @@ divide_polynomials_with_remainder(struct finite_field* field, struct extended_po
     if(deg_a < deg_b){
         *remainder = copy_extended_polynomial(dividing);
         *result = make_zero_polynomial(1);
+        return;
     }
     struct extended_polynomial* inverse_poly = find_inverse_by_add_for_polynomial(field, divider), *dividing_copy, *dividing_temp;
     dividing_copy = copy_extended_polynomial(dividing);
@@ -311,8 +312,6 @@ divide_polynomials_with_remainder(struct finite_field* field, struct extended_po
             ++new_coef;
         }
         (*result)->coefs[deg_a - deg_b] = new_coef;
-        //printf("Result is: ");
-        //print_extended_polynomial(*result);
         deg_a = dividing_copy->degree - 1;
 
         free_extended_polynomial(shifted_inverse);

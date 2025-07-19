@@ -398,7 +398,7 @@ locator_test()
         print_extended_polynomial(locator);
     }
     
-    //free_extended_polynomial(locator);
+    free_extended_polynomial(locator);
     free_extended_polynomial(correct_locator);
 
     return result;
@@ -462,6 +462,7 @@ decode_test(){
         printf("Data recovered: %lld, data original: %lld\n", data, true_data);
         return 0;
     }
+    free_bch_code(bch);
     return 1;
 }
 
@@ -479,6 +480,8 @@ encode_test2(){
     print_extended_polynomial(bch.generator);
 
     bch.data_length = 16 - 1 - bch.generator->degree;
+
+    
 
     return 1;
 }
