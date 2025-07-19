@@ -436,12 +436,15 @@ unsigned long long
 construct_inverse_element_multiply(struct finite_field* field, unsigned long long el)
 {
     struct extended_polynomial* t0, *s0, *r0;
-
-    extended_euclidean_algorithm(field, construct_polynomial_from_field_element(field, get_primitive_polynomial(field)),
-        construct_polynomial_from_field_element(field, el), &s0, &t0, &r0);
+    struct extended_polynomial *el1 = construct_polynomial_from_field_element(field, get_primitive_polynomial(field));
+    struct extended_polynomial *el2 = construct_polynomial_from_field_element(field, el);
+    extended_euclidean_algorithm(field, el1, el2, &s0, &t0, &r0);
 
     free_extended_polynomial(s0);
     free_extended_polynomial(r0);
+
+    free_extended_polynomial(el1);
+    free_extended_polynomial(el2);
 
     return get_field_el_from_polynomial(field, t0, NEED_FREE);
 }
