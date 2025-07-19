@@ -149,6 +149,7 @@ check_if_irreducible(unsigned long long possible_polynomial, unsigned long long 
             break;
         }
         free_extended_polynomial(r0);
+        free_extended_polynomial(need_check_gcd);
         
     }
     free_extended_polynomial(possible_primitive);
