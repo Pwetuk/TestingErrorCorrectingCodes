@@ -383,7 +383,7 @@ extended_euclidean_algorithm(struct finite_field* field, struct extended_polynom
     struct extended_polynomial* r1 = copy_extended_polynomial(f);
     struct extended_polynomial* s1 = make_zero_polynomial(1);
     struct extended_polynomial* t1 = make_zero_polynomial(1);
-    struct extended_polynomial* q, *r, *temp;
+    struct extended_polynomial* q, *r, *temp, *multiply_temp;
     (*s0)->coefs[0] = 1;
     t1->coefs[0] = 1;
 
@@ -396,22 +396,29 @@ extended_euclidean_algorithm(struct finite_field* field, struct extended_polynom
 
         temp = (*r0);
         (*r0) = r1;
-        r1 = difference_of_two_polynomials(field, temp, multiply_two_extended_polynomials(field, q, r1));
+        multiply_temp = multiply_two_extended_polynomials(field, q, r1);
+        r1 = difference_of_two_polynomials(field, temp, multiply_temp);
         
+        free_extended_polynomial(multiply_temp);
         free_extended_polynomial(temp);
 
 
         temp = (*s0);
         (*s0) = s1;
-        s1 = difference_of_two_polynomials(field, temp, multiply_two_extended_polynomials(field, q, s1));
+        multiply_temp = multiply_two_extended_polynomials(field, q, s1);
+        s1 = difference_of_two_polynomials(field, temp, multiply_temp);
         
+        free_extended_polynomial(multiply_temp);
         free_extended_polynomial(temp);
 
         temp = (*t0);
         (*t0) = t1;
-        t1 = difference_of_two_polynomials(field, temp, multiply_two_extended_polynomials(field, q, t1));
+        multiply_temp = multiply_two_extended_polynomials(field, q, t1);
+        t1 = difference_of_two_polynomials(field, temp, multiply_temp);
+        
+        free_extended_polynomial(multiply_temp);
         free_extended_polynomial(temp);
-
+        
         free_extended_polynomial(q);
 
     }
