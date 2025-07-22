@@ -1,9 +1,13 @@
+#include <stdint.h>
+
 #ifndef POLYNOMIALS  
 #define POLYNOMIALS
 
 #include "finite_field.h"
 
 #define NEED_FREE 1
+
+typedef uint64_t needed_type;
 
 #define max(a,b) \
    ({ __typeof__ (a) _a = (a); \
@@ -27,11 +31,11 @@ struct cyclotomic_cosets{
 };
 
 
-typedef unsigned long long int polynomial;
+typedef uint64_t polynomial;
 
 struct extended_polynomial{
     int degree;
-    unsigned long long int* coefs;
+    needed_type* coefs;
 };
 
 struct cyclotomic_cosets*
@@ -48,7 +52,7 @@ void
 free_extended_polynomial(struct extended_polynomial*);
 
 struct extended_polynomial*
-construct_extended_polynomial_from_coefs(int* coefs, int n);
+construct_extended_polynomial_from_coefs(needed_type* coefs, int n);
 
 void
 print_extended_polynomial(struct extended_polynomial* to_print);
@@ -84,15 +88,15 @@ void
 divide_polynomials_with_remainder(struct finite_field* field, struct extended_polynomial* dividing, struct extended_polynomial* divider,
     struct extended_polynomial** result, struct extended_polynomial** remainder);
 
-unsigned long long
+uint64_t
 find_value_from_root(struct finite_field* field, struct extended_polynomial* poly, int primitive_power);
 
 struct extended_polynomial*
 multiply_extended_polynomial_by_x_n(struct extended_polynomial* poly, int n, int need_free);
 
 
-unsigned long long
-construct_inverse_element_multiply(struct finite_field* field, unsigned long long element);
+uint64_t
+construct_inverse_element_multiply(struct finite_field* field, uint64_t element);
 
 int
 equal_polynomials(struct extended_polynomial* a, struct extended_polynomial* b);
@@ -101,17 +105,17 @@ struct extended_polynomial*
 make_zero_polynomial(int degree);
 
 
-unsigned long long
-construct_inverse_element_multiply(struct finite_field* field, unsigned long long el);
+uint64_t
+construct_inverse_element_multiply(struct finite_field* field, uint64_t el);
 
 struct extended_polynomial*
-construct_polynomial_from_field_element(struct finite_field* field, unsigned long long el);
+construct_polynomial_from_field_element(struct finite_field* field, uint64_t el);
 
-unsigned long long
+uint64_t
 get_field_el_from_polynomial(struct finite_field* field, struct extended_polynomial* poly, int need_free);
 
 struct extended_polynomial*
-multiply_polynomial_by_element(struct finite_field* field, struct extended_polynomial* poly, unsigned long long int el, int need_free);
+multiply_polynomial_by_element(struct finite_field* field, struct extended_polynomial* poly, uint64_t el, int need_free);
 
 void
 extended_euclidean_algorithm(struct finite_field* field, struct extended_polynomial* el, struct extended_polynomial* f, 

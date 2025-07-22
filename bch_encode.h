@@ -10,11 +10,11 @@ struct bch_code{
 struct extended_polynomial*
 encode_bch(struct bch_code* bch_code_struct, struct extended_polynomial* data);
 
-unsigned long long*
+uint64_t*
 calculate_syndrome(struct finite_field* field, struct extended_polynomial* encoded_message, int number_of_errors);
 
 struct extended_polynomial*
-construct_locator_polynomial(struct finite_field* field, unsigned long long* syndrome, int number_of_errors);
+construct_locator_polynomial(struct finite_field* field, uint64_t* syndrome, int number_of_errors);
 
 int*
 chien_search(struct finite_field* field, struct extended_polynomial* locator, int number_of_errors);
@@ -22,11 +22,17 @@ chien_search(struct finite_field* field, struct extended_polynomial* locator, in
 void
 fix_errors_in_bch_binary(struct extended_polynomial* codeword, int* errors_pos, int number_of_errors);
 
-unsigned long long
+struct extended_polynomial*
 decode_bch(struct bch_code* bch_code_struct, struct extended_polynomial* message);
 
 struct bch_code*
-init_bch(unsigned long long p, unsigned long long power, int number_of_errors, unsigned long long primitive);
+init_bch(uint64_t p, uint64_t power, int number_of_errors, uint64_t primitive);
 
 void
 free_bch_code(struct bch_code* bch_code_struct);
+
+uint64_t*
+bch_encode_arr(struct bch_code* bch, uint64_t* to_encode_arr, uint64_t to_encode_length, uint64_t *encoded_length);
+
+uint64_t*
+bch_decode_arr(struct bch_code* bch, uint64_t* to_decode_arr, uint64_t to_decode_length, uint64_t *decoded_length);

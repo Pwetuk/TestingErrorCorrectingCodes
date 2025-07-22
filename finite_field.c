@@ -7,11 +7,11 @@
 #include "finite_field.h"
 
 
-unsigned long long
-add_in_field(struct finite_field* field, unsigned long long a, unsigned long long b)
+uint64_t
+add_in_field(struct finite_field* field, uint64_t a, uint64_t b)
 {
     if(field->characteristic == 2) return a ^ b;
-    unsigned long long int a_copy = a, b_copy = b, result = 0;
+    uint64_t a_copy = a, b_copy = b, result = 0;
     int i = 0;
     while (a_copy != 0)
     {
@@ -24,13 +24,13 @@ add_in_field(struct finite_field* field, unsigned long long a, unsigned long lon
     return result;
 }
 
-unsigned long long
-multiply_in_field(struct finite_field* field, unsigned long long a, unsigned long long b)
+uint64_t
+multiply_in_field(struct finite_field* field, uint64_t a, uint64_t b)
 {   
     if(field->characteristic == 2){
-        unsigned long long result = 0;
-        unsigned long long max_val = 1 << field->power;
-        unsigned long long a_copy = a, b_copy = b;
+        uint64_t result = 0;
+        uint64_t max_val = 1 << field->power;
+        uint64_t a_copy = a, b_copy = b;
         while (a_copy) {
             if(a_copy % 2 == 1){
                 result ^= b_copy;
@@ -44,12 +44,12 @@ multiply_in_field(struct finite_field* field, unsigned long long a, unsigned lon
         }
         return result;
     }
-    unsigned long long result = 0;
-    unsigned long long max_val = pow(field->characteristic, field->power);
-    unsigned long long a_copy = a, b_copy = b;
+    uint64_t result = 0;
+    uint64_t max_val = pow(field->characteristic, field->power);
+    uint64_t a_copy = a, b_copy = b;
     while(a_copy != 0){
         if(a_copy % field->characteristic != 0){
-            for(int i = 0; (unsigned long long)i < a_copy % field->characteristic; ++i){
+            for(int i = 0; (uint64_t)i < a_copy % field->characteristic; ++i){
                 result = add_in_field(field, result, b_copy);
             }
         }
@@ -63,31 +63,31 @@ multiply_in_field(struct finite_field* field, unsigned long long a, unsigned lon
     return result;
 }
 
-unsigned long long
+uint64_t
 find_primitive_in_power(struct finite_field* field, int power)
 {
     if(power < 0){
-        unsigned long long int temp = find_primitive_in_power(field, -power);
+        uint64_t temp = find_primitive_in_power(field, -power);
         return construct_inverse_element_multiply(field, temp);
     }
-    if((unsigned long long)power < field->power){
+    if((uint64_t)power < field->power){
         if(field->characteristic == 2){
             return (1 << power);
         }
         return pow(field->characteristic, power);
     }else if(power % 2 == 0){
-        unsigned long long a = find_primitive_in_power(field, power/ 2);
+        uint64_t a = find_primitive_in_power(field, power/ 2);
         return  multiply_in_field(field, a, a);
     }
     return multiply_in_field(field, find_primitive_in_power(field, power - 1), field->characteristic);
 }
 
-unsigned long long
-construct_inverse_element_add(struct finite_field* field, unsigned long long element)
+uint64_t
+construct_inverse_element_add(struct finite_field* field, uint64_t element)
 {
     if(field->characteristic == 2) return element;
-    unsigned long long element_copy = element;
-    unsigned long long result = 0;
+    uint64_t element_copy = element;
+    uint64_t result = 0;
     int i = 0;
     while(element_copy != 0){
         if(element_copy % field->characteristic != 0){
@@ -99,19 +99,19 @@ construct_inverse_element_add(struct finite_field* field, unsigned long long ele
     return result;
 }
 
-unsigned long long
+uint64_t
 get_primitive_polynomial(struct finite_field* field)
 {
-    unsigned long long result = pow(field->characteristic, field->power);
+    uint64_t result = pow(field->characteristic, field->power);
     result += construct_inverse_element_add(field, field->primative_in_power_n);
     return result;
 }
 
 struct finite_field*
-construct_gf_p_m(unsigned long long characteristic, unsigned long long power)
+construct_gf_p_m(uint64_t characteristic, uint64_t power)
 {
-    unsigned long long possible_polynomial = (unsigned long long) pow((double)characteristic, (double)power);
-    for(unsigned long long i = 1; i < possible_polynomial; ++i){
+    uint64_t possible_polynomial = (uint64_t) pow((double)characteristic, (double)power);
+    for(uint64_t i = 1; i < possible_polynomial; ++i){
         if(check_if_irreducible(possible_polynomial + i, characteristic, power) == 1){
             if(check_if_primitive(possible_polynomial + i, characteristic, power) == 1){
                 struct finite_field* result = malloc(sizeof(struct finite_field));
@@ -126,7 +126,7 @@ construct_gf_p_m(unsigned long long characteristic, unsigned long long power)
 }
 
 int
-check_if_irreducible(unsigned long long possible_polynomial, unsigned long long p, unsigned long long m)
+check_if_irreducible(uint64_t possible_polynomial, uint64_t p, uint64_t m)
 {
     struct finite_field check_field;
     check_field.characteristic = p;
@@ -135,7 +135,7 @@ check_if_irreducible(unsigned long long possible_polynomial, unsigned long long 
     struct extended_polynomial *s0, *t0, *r0, *possible_primitive, *need_check_gcd;
     bool result = 1;
     possible_primitive = construct_polynomial_from_field_element(&check_field, possible_polynomial);
-    for(unsigned long long i = 1; i < m; ++i){
+    for(uint64_t i = 1; i < m; ++i){
         need_check_gcd = get_polynomial_for_irruducuble(p, i);
         extended_euclidean_algorithm(&check_field, possible_primitive, 
         need_check_gcd, &s0, &t0, &r0
@@ -159,20 +159,20 @@ check_if_irreducible(unsigned long long possible_polynomial, unsigned long long 
 
 
 struct extended_polynomial*
-get_polynomial_for_irruducuble(unsigned long long p, unsigned long long d)
+get_polynomial_for_irruducuble(uint64_t p, uint64_t d)
 {
     struct extended_polynomial* result = make_zero_polynomial(1);
     result->degree = 1;
     result->coefs[0] = 1;
     result = multiply_extended_polynomial_by_x_n(result, pow(p, d), NEED_FREE);
-    result->coefs[1] += p - 1;
+    result->coefs[1] += (needed_type) p - 1;
     return result;
 }
 
 int
-check_if_primitive(unsigned long long possible_polynomial, unsigned long long p, unsigned long long m)
+check_if_primitive(uint64_t possible_polynomial, uint64_t p, uint64_t m)
 {
-    unsigned long long int n = (unsigned long long)pow((double)p, (double)m);
+    uint64_t n = (uint64_t)pow((double)p, (double)m);
 
     int result = 1;
 
@@ -181,7 +181,7 @@ check_if_primitive(unsigned long long possible_polynomial, unsigned long long p,
     test_field.power = m;
     test_field.primative_in_power_n = construct_inverse_element_add(&test_field, possible_polynomial - n);
     int len_primes = 0;
-    unsigned long long *primes = find_prime_divisors(n - 1, &len_primes);
+    uint64_t *primes = find_prime_divisors(n - 1, &len_primes);
 
     for(int i = 0; i < len_primes; ++i){
         if(find_primitive_in_power(&test_field, n/primes[i]) == 1){
@@ -193,17 +193,17 @@ check_if_primitive(unsigned long long possible_polynomial, unsigned long long p,
     return result;
 }
 
-unsigned long long*
-find_prime_divisors(unsigned long long n, int *length)
+uint64_t*
+find_prime_divisors(uint64_t n, int *length)
 {
-    unsigned long long *primes = malloc(sizeof(unsigned long long) * 64), *new_primes;
+    uint64_t *primes = malloc(sizeof(uint64_t) * 64), *new_primes;
     int size = 64, count = 0;
 
     if (n % 2 == 0) {
         primes[count] = 2;
         ++count;
         if(count >= size){
-            new_primes = malloc(sizeof(unsigned long long) * size * 2);
+            new_primes = malloc(sizeof(uint64_t) * size * 2);
             memcpy(new_primes, primes, size);
             size *= 2;
             free(primes);
@@ -214,12 +214,12 @@ find_prime_divisors(unsigned long long n, int *length)
         }
     }
     
-    unsigned long long limit = (unsigned long long) sqrt(n);
-    for (unsigned long long d = 3; d <= limit; d += 2) {
+    uint64_t limit = (uint64_t) sqrt(n);
+    for (uint64_t d = 3; d <= limit; d += 2) {
         if (n % d == 0) {
             primes[count] = d;
             if(count >= size){
-                new_primes = malloc(sizeof(unsigned long long) * size * 2);
+                new_primes = malloc(sizeof(uint64_t) * size * 2);
                 memcpy(new_primes, primes, size);
                 size *= 2;
                 free(primes);
@@ -229,7 +229,7 @@ find_prime_divisors(unsigned long long n, int *length)
             while (n % d == 0) {
                 n /= d;
             }
-            limit = (unsigned long long) sqrt(n);
+            limit = (uint64_t) sqrt(n);
         }
     }
 

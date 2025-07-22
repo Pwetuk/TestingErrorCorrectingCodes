@@ -7,38 +7,38 @@
 
 struct finite_field{
     unsigned int characteristic;
-    unsigned long long int power;
-    unsigned long long int primative_in_power_n;
+    uint64_t power;
+    uint64_t primative_in_power_n;
 };
 
-unsigned long long int
-add_in_field(struct finite_field* field, unsigned long long int a, unsigned long long int b);
+uint64_t
+add_in_field(struct finite_field* field, uint64_t a, uint64_t b);
 
-unsigned long long int
-multiply_in_field(struct finite_field* field, unsigned long long int a, unsigned long long int b);
+uint64_t
+multiply_in_field(struct finite_field* field, uint64_t a, uint64_t b);
 
-unsigned long long int
+uint64_t
 find_primitive_in_power(struct finite_field* field, int power);
 
-unsigned long long
-construct_inverse_element_add(struct finite_field* field, unsigned long long element);
+uint64_t
+construct_inverse_element_add(struct finite_field* field, uint64_t element);
 
-unsigned long long
+uint64_t
 get_primitive_polynomial(struct finite_field* field);
 
 struct finite_field*
-construct_gf_p_m(unsigned long long characteristic, unsigned long long power);
+construct_gf_p_m(uint64_t characteristic, uint64_t power);
 
 int
-check_if_irreducible(unsigned long long possible_polynomial, unsigned long long p, unsigned long long m);
+check_if_irreducible(uint64_t possible_polynomial, uint64_t p, uint64_t m);
 
 struct extended_polynomial*
-get_polynomial_for_irruducuble(unsigned long long p, unsigned long long d);
+get_polynomial_for_irruducuble(uint64_t p, uint64_t d);
 
 int
-check_if_primitive(unsigned long long possible_polynomial, unsigned long long p, unsigned long long m);
+check_if_primitive(uint64_t possible_polynomial, uint64_t p, uint64_t m);
 
-unsigned long long*
-find_prime_divisors(unsigned long long n, int *length);
+uint64_t*
+find_prime_divisors(uint64_t n, int *length);
 
 #endif

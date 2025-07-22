@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "bch_tests.h"\
+#include "bch_tests.h"
 
 int 
 run_tests()
@@ -61,7 +61,7 @@ test_in_characteristics_2_first()
     test_field.primative_in_power_n = 5;
 
     struct extended_polynomial true_answer;
-    unsigned long long int coefficients[11] = {1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1};
+    needed_type coefficients[11] = {1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1};
     true_answer.degree = 11;
     true_answer.coefs = coefficients;
 
@@ -95,7 +95,7 @@ test_in_characteristics_2_second()
 
 
     struct extended_polynomial true_answer;
-    unsigned long long int coefficients[13] = {1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1};
+    needed_type coefficients[13] = {1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1};
     true_answer.degree = 13;
     true_answer.coefs = coefficients;
 
@@ -125,7 +125,7 @@ test_in_characteristics_2_third()
     test_field.primative_in_power_n = 3;
 
     struct extended_polynomial true_answer;
-    unsigned long long int coefficients[11] = {1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1};
+    needed_type coefficients[11] = {1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1};
     true_answer.degree = 11;
     true_answer.coefs = coefficients;
 
@@ -155,7 +155,7 @@ test_in_characteristics_n_first()
     test_field.primative_in_power_n = 25;
 
     struct extended_polynomial true_answer;
-    unsigned long long int coefficients[16] = {2, 2, 1, 2, 2, 1, 0, 2, 1, 1, 1, 1, 1, 0, 1, 1};
+    needed_type coefficients[16] = {2, 2, 1, 2, 2, 1, 0, 2, 1, 1, 1, 1, 1, 0, 1, 1};
     true_answer.degree = 16;
     true_answer.coefs = coefficients;
 
@@ -186,7 +186,7 @@ test_in_characteristics_n_second()
     test_field.primative_in_power_n = 4 + 15;
 
     struct extended_polynomial true_answer;
-    unsigned long long int coefficients[13] = {1, 0, 1, 0, 1, 3, 2, 4, 2, 1, 2, 4, 1};
+    needed_type coefficients[13] = {1, 0, 1, 0, 1, 3, 2, 4, 2, 1, 2, 4, 1};
     true_answer.degree = 13;
     true_answer.coefs = coefficients;
 
@@ -218,7 +218,7 @@ test_in_characteristics_n_third()
     test_field.primative_in_power_n = 228;
 
     struct extended_polynomial true_answer;
-    unsigned long long int coefficients[17] = {4, 0, 0, 6, 4, 3, 5, 2, 6, 3, 4, 6, 0, 2, 4, 2, 1};
+    needed_type coefficients[17] = {4, 0, 0, 6, 4, 3, 5, 2, 6, 3, 4, 6, 0, 2, 4, 2, 1};
     true_answer.degree = 17;
     true_answer.coefs = coefficients;
 
@@ -253,8 +253,8 @@ temp_test1()
 
     struct extended_polynomial a, b, *c, *d;
 
-    unsigned long long int a1[16] = {1, 1, 0, 1};
-    unsigned long long int a2[16] = {1, 1};
+    needed_type a1[16] = {1, 1, 0, 1};
+    needed_type a2[16] = {1, 1};
 
     a.degree = 4;
     a.coefs = a1;
@@ -278,7 +278,7 @@ temp_test2()
     test_field.characteristic = 2;
     test_field.power = 5;
     test_field.primative_in_power_n = 5;
-    unsigned long long int temp;
+    uint64_t temp;
     temp = find_primitive_in_power(&test_field, -7);
     return multiply_in_field(&test_field, temp, 16 + 8 + 4 + 2) == 19;
 }
@@ -304,16 +304,17 @@ encode_test1()
 {
     struct bch_code* bch = init_bch(2, 5, 3, 0);
 
-    struct extended_polynomial message;
+    struct extended_polynomial message, *res;
 
-    unsigned long long int coefficients_msg[16] = {1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1};
-
-    message.degree = 16;
+    needed_type coefficients_msg[15] = {1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1};
+    message.degree = 15;
     message.coefs = coefficients_msg;
-
+    
     struct extended_polynomial* result = encode_bch(bch, &message);
-    unsigned long long decoded = decode_bch(bch, result);
-    int test_result = (decoded == 45967);
+    res = decode_bch(bch, result);
+    uint64_t decoded = extended_polynomial_to_polynomial(bch->field, res);
+    free_extended_polynomial(res);
+    int test_result = (decoded == 29583);
 
 
     if(test_result != 1){
@@ -335,15 +336,15 @@ syndrom_test()
     test_field.power = 5;
     test_field.primative_in_power_n = 5; 
     
-    unsigned long long int correct_syndrome[6] = {3, 5, 9, 17, 4, 11};
+    uint64_t correct_syndrome[6] = {3, 5, 9, 17, 4, 11};
 
-    unsigned long long int coefficients[31] = {1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1};
+    needed_type coefficients[31] = {1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1};
     struct extended_polynomial encoded;
     encoded.degree = 31;
     encoded.coefs = coefficients;
 
 
-    unsigned long long *syndrome = calculate_syndrome(&test_field, &encoded, 3);
+    uint64_t *syndrome = calculate_syndrome(&test_field, &encoded, 3);
     
     int result = 1;
     for(int i = 0; i < 6; ++i){
@@ -366,10 +367,10 @@ int inverse_test()
     test_field.characteristic = 2;
     test_field.power = 5;
     test_field.primative_in_power_n = 4 + 1; 
-    unsigned long long result = construct_inverse_element_multiply(&test_field, 3);
+    uint64_t result = construct_inverse_element_multiply(&test_field, 3);
     if( result != 28){
         printf("Inverse test failed\n");
-        printf("Result %lld\n", result);
+        printf("Result %lu\n", result);
         return 0;
     }
     return 1;
@@ -383,10 +384,10 @@ locator_test()
     test_field.primative_in_power_n = 3; 
 
 
-    int coefs[3] = {1, 3, 2};
+    needed_type coefs[3] = {1, 3, 2};
     struct extended_polynomial* correct_locator = construct_extended_polynomial_from_coefs(coefs, 3);
     
-    unsigned long long syndome[4] = {3, 5, 9, 2};
+    uint64_t syndome[4] = {3, 5, 9, 2};
 
     struct extended_polynomial* locator = construct_locator_polynomial(&test_field, syndome, 2);
 
@@ -416,13 +417,13 @@ chien_test(){
 
     int true_errors[3] = {0, 1, -1};
 
-    unsigned long long int coefficients[31] = {1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1};
+    needed_type coefficients[31] = {1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1};
     struct extended_polynomial encoded;
     encoded.degree = 31;
     encoded.coefs = coefficients;
 
 
-    unsigned long long *syndrome = calculate_syndrome(&test_field, &encoded, 3);
+    uint64_t *syndrome = calculate_syndrome(&test_field, &encoded, 3);
 
 
 
@@ -449,17 +450,21 @@ decode_test(){
 
     int result = 1;
 
-    unsigned long long int coefficients[31] = {1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1};
-    struct extended_polynomial encoded;
+    needed_type coefficients[31] = {1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1};
+    struct extended_polynomial encoded, *res;
     encoded.degree = 31;
     encoded.coefs = coefficients;
+    
+    res = decode_bch(bch, &encoded);
+    
+    uint64_t data = extended_polynomial_to_polynomial(bch->field, res), true_data = 45967;
 
-    unsigned long long data = decode_bch(bch, &encoded), true_data = 45967;
+    free_extended_polynomial(res);
 
     result = (data == 45967);
     if(result != 1){
         printf("Decoding failed\n");
-        printf("Data recovered: %lld, data original: %lld\n", data, true_data);
+        printf("Data recovered: %lu, data original: %lu\n", data, true_data);
         return 0;
     }
     free_bch_code(bch);
