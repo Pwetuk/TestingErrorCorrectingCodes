@@ -6,37 +6,32 @@
 #include "bch_encode.h"
 
 
-struct extended_polynomial*
-encode_bch(struct bch_code* bch_code_struct, struct extended_polynomial* data)
+void
+encode_bch(struct bch_code* bch_code_struct, uint64_t data[MAX_DEGREE], uint64_t result[MAX_DEGREE])
 {
-    uint64_t n = pow(bch_code_struct->field->characteristic, bch_code_struct->field->power);
-    struct extended_polynomial* result, *rresult = make_zero_polynomial(n);
-    data = multiply_extended_polynomial_by_x_n(data, n - bch_code_struct->data_length - 1, 0);
-    struct extended_polynomial *quotient = NULL, *remainder = NULL;
-    divide_polynomials_with_remainder(bch_code_struct->field, data, bch_code_struct->generator, &quotient, &remainder);
-    result = difference_of_two_polynomials(bch_code_struct->field, data, remainder);
-    if(quotient == NULL){
-        printf("Something went horribly wrong\n");
-    }
-    free_extended_polynomial(quotient);
-    free_extended_polynomial(remainder);
+    uint64_t n = 1 << bch_code_struct->field->power;
+    memset(result, 0, sizeof(uint64_t) * MAX_DEGREE);
 
-    free_extended_polynomial(data);
-    rresult->degree = n - 1;
-    for(int i = 0; i < result->degree; ++i){
-        rresult->coefs[i] = result->coefs[i];
+    int deg_data = get_degree(data);
+    for(int i = 0; i < deg_data; ++i){
+        data[n - bch_code_struct->data_length - 1 + i] = data[i];
+        data[i] = 0;
     }
-    free_extended_polynomial(result);
-    return rresult;
+
+    uint64_t quotient[MAX_DEGREE], remainder[MAX_DEGREE];
+    divide_polynomials_with_remainder(bch_code_struct->field, data, bch_code_struct->generator, quotient, remainder);
+    difference_of_two_polynomials(bch_code_struct->field, data, remainder, result);
 }
 
-struct extended_polynomial*
-decode_bch(struct bch_code* bch_code_struct, struct extended_polynomial* message)
+void
+decode_bch(struct bch_code* bch_code_struct, uint64_t message[MAX_DEGREE], uint64_t result[MAX_DEGREE])
 {
-    struct extended_polynomial* locator;
-    int* errors_pos;
-    uint64_t* syndrome = calculate_syndrome(bch_code_struct->field, message, bch_code_struct->number_of_errors);
-
+    uint64_t locator[MAX_DEGREE];
+    int errors_pos[MAX_DEGREE];
+    uint64_t syndrome[MAX_DEGREE];
+    calculate_syndrome(bch_code_struct->field, message, bch_code_struct->number_of_errors, syndrome);
+    printf("Calculated\n");
+    print_extended_polynomial(syndrome);
 
     uint8_t is_null = 0;
     for(int i = 0; i < bch_code_struct->number_of_errors; ++i){
@@ -47,91 +42,100 @@ decode_bch(struct bch_code* bch_code_struct, struct extended_polynomial* message
     }
 
     if(is_null == 1){
-        locator = construct_locator_polynomial(bch_code_struct->field, syndrome, bch_code_struct->number_of_errors);
-    
-        errors_pos = chien_search(bch_code_struct->field, locator, bch_code_struct->number_of_errors);
-    
+        construct_locator_polynomial(bch_code_struct->field, syndrome, bch_code_struct->number_of_errors, locator);
+        print_extended_polynomial(locator);
+        chien_search(bch_code_struct->field, locator, bch_code_struct->number_of_errors, errors_pos);
+        printf("Errors: ");
+        for(int i = 0; i <= bch_code_struct->number_of_errors; ++i){
+            printf("%d\t", errors_pos[i]);
+        }
         fix_errors_in_bch_binary(message, errors_pos, bch_code_struct->number_of_errors);
     }
 
-    struct extended_polynomial* result = make_zero_polynomial(bch_code_struct->data_length);
-    result->degree = bch_code_struct->data_length;
+    memset(result, 0, MAX_DEGREE * sizeof(uint64_t));
+    
+    int result_deg = bch_code_struct->data_length;
+    int messg_degree = get_degree(message);
 
     for(int i = 0; i < bch_code_struct->data_length; ++i){
-        result->coefs[i] = message->coefs[message->degree - result->degree + i];
+        result[i] = message[messg_degree - result_deg + i];
     }
 
-    free(syndrome);
-    if(is_null == 1){
-        free(errors_pos);
-        free_extended_polynomial(locator);
-    }
-    return result;
 }
 
-uint64_t*
-calculate_syndrome(struct finite_field* field, struct extended_polynomial* encoded_message, int number_of_errors)
+void
+calculate_syndrome(struct finite_field* field, uint64_t encoded_message[MAX_DEGREE], int number_of_errors, uint64_t syndrome[MAX_DEGREE])
 {
-    uint64_t *syndrome = malloc(sizeof(uint64_t) * 2 * number_of_errors);
     for(int i = 0; i < 2 * number_of_errors; ++i){
+        printf("i: %d\n", i);
         syndrome[i] = find_value_from_root(field, encoded_message, i + 1);
     }
-    return syndrome;
+    printf("Calculated 2\n");
 }
 
 
 
-struct extended_polynomial*
-construct_locator_polynomial(struct finite_field* field, uint64_t* syndrome, int number_of_errors){
-    needed_type base_coef[2] = {1, 0};
-    struct extended_polynomial* locator = construct_extended_polynomial_from_coefs(base_coef, 1);
-    struct extended_polynomial* B = construct_extended_polynomial_from_coefs(base_coef, 1);
-    struct extended_polynomial* locator_old, *B_copy;
-    int L = 0, m = 1;
+void
+construct_locator_polynomial(struct finite_field* field, uint64_t* syndrome, int number_of_errors, uint64_t locator[MAX_DEGREE]){
+    uint64_t B[MAX_DEGREE], locator_old[MAX_DEGREE], B_copy[MAX_DEGREE], temp[MAX_DEGREE];
+
+    memset(B, 0, MAX_DEGREE * sizeof(uint64_t));
+    memset(B_copy, 0, MAX_DEGREE * sizeof(uint64_t));
+
+    memset(locator, 0, sizeof(uint64_t) * MAX_DEGREE);
+
+    locator[0] = 1;
+    B[0] = 1;
+    int L = 0, m = 1, deg_b;
     uint64_t delta_r, b = 1;
     for(int r = 0; r < 2 * number_of_errors; ++r){
         
         delta_r = syndrome[r];
-        for(int i = 1; i <= L && i < locator->degree; ++i){
-            delta_r = add_in_field(field, delta_r, multiply_in_field(field, syndrome[r - i], locator->coefs[i]));
+        for(int i = 1; i <= L && i < MAX_DEGREE; ++i){
+            delta_r = add_in_field(field, delta_r, multiply_in_field(field, syndrome[r - i], locator[i]));
         }        
 
         if(delta_r == 0){
             ++m;
         }else{
-            locator_old = locator;
-            B_copy = multiply_extended_polynomial_by_x_n(B, m, 0);
-            uint64_t coef = multiply_in_field(field, delta_r, construct_inverse_element_multiply(field, b));
-            B_copy = multiply_polynomial_by_element(field, B_copy, coef, NEED_FREE);
-            locator = difference_of_two_polynomials(field, locator, B_copy);
-            free_extended_polynomial(B_copy);
+            memcpy(locator_old, locator, MAX_DEGREE * sizeof(uint64_t));
+
+            deg_b = get_degree(B);
+
+            memset(B_copy, 0, MAX_DEGREE * sizeof(uint64_t));
+
+            for(int i = 0; i <= deg_b; ++i){
+                B_copy[i + m] = B[i];
+            }
+            uint64_t inversed = construct_inverse_element_multiply(field, b);
+            uint64_t coef = multiply_in_field(field, delta_r, inversed);
+            multiply_polynomial_by_element(field, B_copy, coef);
+            difference_of_two_polynomials(field, locator, B_copy, temp);
+            memcpy(locator, temp, sizeof(uint64_t) * MAX_DEGREE);
+
             if(2 * L <= r){
                 L = r + 1 - L;
-                free_extended_polynomial(B);
-                B = copy_extended_polynomial(locator_old);
+                memcpy(B, locator_old, sizeof(uint64_t) * MAX_DEGREE);
                 b = delta_r;
                 m = 1;  
             }else{
                 ++m;
             }
-            free_extended_polynomial(locator_old);
+            
         }
     }
-
-    free_extended_polynomial(B);
-    return locator;
 }
 
-int*
-chien_search(struct finite_field* field, struct extended_polynomial* locator, int number_of_errors)
+void
+chien_search(struct finite_field* field, uint64_t* locator, int number_of_errors, int* result)
 {
-    uint64_t n = pow(field->characteristic, field->power);
+
+    uint64_t n = 1 << field->power;
     uint64_t pos;
     int err_pos = 0;
-    int *result = malloc(number_of_errors * sizeof(int));
-    for(int i = 0; i < number_of_errors; ++i){
-        result[i] = -1;
-    }
+
+    memset(result, -1, sizeof(int) * MAX_DEGREE);
+
     for(uint64_t i = 0; i < n - 1; ++i){
         pos = find_value_from_root(field, locator, -i);
         if(pos == 0){
@@ -142,17 +146,16 @@ chien_search(struct finite_field* field, struct extended_polynomial* locator, in
             }
         }
     }
-    return result;
 }
 
 void
-fix_errors_in_bch_binary(struct extended_polynomial* codeword, int* errors_pos, int number_of_errors)
+fix_errors_in_bch_binary(uint64_t* codeword, int* errors_pos, int number_of_errors)
 {
     for(int i = 0; i < number_of_errors; ++i){
         if(errors_pos[i] == -1){
             break;
         }
-        codeword->coefs[errors_pos[i]] ^= 1;
+        codeword[errors_pos[i]] ^= 1;
     }
 }
 
@@ -171,8 +174,8 @@ init_bch(uint64_t p, uint64_t power, int number_of_errors, uint64_t primitive)
     }
 
     to_return->number_of_errors = number_of_errors;
-    to_return->generator = construct_generator_polynomial(to_return->field, number_of_errors);
-    to_return->data_length = pow(to_return->field->characteristic, to_return->field->power) - to_return->generator->degree;
+    construct_generator_polynomial(to_return->field, number_of_errors, to_return->generator);
+    to_return->data_length = pow(to_return->field->characteristic, to_return->field->power) - get_degree(to_return->generator);
     return to_return;
 }
 
@@ -180,10 +183,10 @@ void
 free_bch_code(struct bch_code* bch_code_struct)
 {
     free(bch_code_struct->field);
-    free_extended_polynomial(bch_code_struct->generator);
     free(bch_code_struct);
 }
 
+/*
 uint64_t*
 bch_encode_arr(struct bch_code* bch, uint64_t* to_encode_arr, uint64_t to_encode_length, uint64_t *encoded_length)
 {
@@ -289,3 +292,4 @@ bch_decode_arr(struct bch_code* bch, uint64_t* to_decode_arr, uint64_t to_decode
     free_extended_polynomial(decode_poly);
     return result;
 }
+*/

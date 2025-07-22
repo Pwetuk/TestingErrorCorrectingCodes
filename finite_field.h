@@ -32,8 +32,8 @@ construct_gf_p_m(uint64_t characteristic, uint64_t power);
 int
 check_if_irreducible(uint64_t possible_polynomial, uint64_t p, uint64_t m);
 
-struct extended_polynomial*
-get_polynomial_for_irruducuble(uint64_t p, uint64_t d);
+void
+get_polynomial_for_irruducuble(uint64_t p, uint64_t d, uint64_t *need_check_gcd);
 
 int
 check_if_primitive(uint64_t possible_polynomial, uint64_t p, uint64_t m);

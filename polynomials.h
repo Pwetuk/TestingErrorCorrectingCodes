@@ -5,7 +5,7 @@
 
 #include "finite_field.h"
 
-#define NEED_FREE 1
+#define MAX_DEGREE 32
 
 typedef uint64_t needed_type;
 
@@ -35,7 +35,7 @@ typedef uint64_t polynomial;
 
 struct extended_polynomial{
     int degree;
-    needed_type* coefs;
+    uint64_t *coefs;
 };
 
 struct cyclotomic_cosets*
@@ -51,55 +51,47 @@ print_polynomial(struct finite_field* field, polynomial poly);
 void
 free_extended_polynomial(struct extended_polynomial*);
 
-struct extended_polynomial*
-construct_extended_polynomial_from_coefs(needed_type* coefs, int n);
+void
+construct_extended_polynomial_from_coefs(uint64_t* coefs, int n, uint64_t res[MAX_DEGREE]);
 
 void
-print_extended_polynomial(struct extended_polynomial* to_print);
+print_extended_polynomial(uint64_t* to_print);
 
-struct extended_polynomial*
-add_two_extended_polynomials(struct finite_field*, struct extended_polynomial*, struct extended_polynomial*);
+void
+add_two_extended_polynomials(struct finite_field*, uint64_t*, uint64_t*);
 
-struct extended_polynomial*
-multiply_two_extended_polynomials(struct finite_field*, struct extended_polynomial*, struct extended_polynomial*);
-
-
-struct extended_polynomial*
-copy_extended_polynomial(struct extended_polynomial* poly);
+void
+multiply_two_extended_polynomials(struct finite_field*, uint64_t*, uint64_t*);
 
 
-struct extended_polynomial*
-construct_minimal_polynomial_from_coset(struct finite_field* field, struct cyclotomic_coset* coset);
+void
+copy_extended_polynomial(uint64_t* poly, uint64_t* res);
+
+
+void
+construct_minimal_polynomial_from_coset(struct finite_field* field, struct cyclotomic_coset* coset, uint64_t res[MAX_DEGREE]);
 
 polynomial
-extended_polynomial_to_polynomial(struct finite_field* field, struct extended_polynomial* poly);
-
-struct extended_polynomial*
-construct_generator_polynomial(struct finite_field* field, int number_of_errors);
-
-
-struct extended_polynomial*
-find_inverse_by_add_for_polynomial(struct finite_field* field, struct extended_polynomial* a);
-
-struct extended_polynomial*
-difference_of_two_polynomials(struct finite_field* field, struct extended_polynomial* a, struct extended_polynomial* b);
+extended_polynomial_to_polynomial(struct finite_field* field, uint64_t* poly);
 
 void
-divide_polynomials_with_remainder(struct finite_field* field, struct extended_polynomial* dividing, struct extended_polynomial* divider,
-    struct extended_polynomial** result, struct extended_polynomial** remainder);
+construct_generator_polynomial(struct finite_field* field, int number_of_errors, uint64_t res[MAX_DEGREE]);
+
+void
+find_inverse_by_add_for_polynomial(struct finite_field* field, uint64_t a[MAX_DEGREE], uint64_t res[MAX_DEGREE]);
+
+void
+difference_of_two_polynomials(struct finite_field* field, uint64_t* a, uint64_t* b, uint64_t res[MAX_DEGREE]);
+
+void
+divide_polynomials_with_remainder(struct finite_field* field, uint64_t* dividing, uint64_t* divider,
+    uint64_t result[MAX_DEGREE], uint64_t remainder[MAX_DEGREE]);
 
 uint64_t
-find_value_from_root(struct finite_field* field, struct extended_polynomial* poly, int primitive_power);
-
-struct extended_polynomial*
-multiply_extended_polynomial_by_x_n(struct extended_polynomial* poly, int n, int need_free);
-
-
-uint64_t
-construct_inverse_element_multiply(struct finite_field* field, uint64_t element);
+find_value_from_root(struct finite_field* field, uint64_t poly[MAX_DEGREE], int primitive_power);
 
 int
-equal_polynomials(struct extended_polynomial* a, struct extended_polynomial* b);
+equal_polynomials(uint64_t* a, uint64_t* b);
 
 struct extended_polynomial*
 make_zero_polynomial(int degree);
@@ -108,17 +100,20 @@ make_zero_polynomial(int degree);
 uint64_t
 construct_inverse_element_multiply(struct finite_field* field, uint64_t el);
 
-struct extended_polynomial*
-construct_polynomial_from_field_element(struct finite_field* field, uint64_t el);
+void
+construct_polynomial_from_field_element(struct finite_field* field, uint64_t el, uint64_t[MAX_DEGREE]);
 
 uint64_t
-get_field_el_from_polynomial(struct finite_field* field, struct extended_polynomial* poly, int need_free);
-
-struct extended_polynomial*
-multiply_polynomial_by_element(struct finite_field* field, struct extended_polynomial* poly, uint64_t el, int need_free);
+get_field_el_from_polynomial(struct finite_field* field, uint64_t poly[MAX_DEGREE]);
 
 void
-extended_euclidean_algorithm(struct finite_field* field, struct extended_polynomial* el, struct extended_polynomial* f, 
-    struct extended_polynomial** s0, struct extended_polynomial** t0, struct extended_polynomial** r0);
+multiply_polynomial_by_element(struct finite_field* field, uint64_t poly[MAX_DEGREE], uint64_t el);
+
+void
+extended_euclidean_algorithm(struct finite_field* field, uint64_t* el, uint64_t* f, 
+    uint64_t s0[MAX_DEGREE], uint64_t t0[MAX_DEGREE], uint64_t r0[MAX_DEGREE]);
+
+int
+get_degree(uint64_t poly[MAX_DEGREE]);
 
 #endif

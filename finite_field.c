@@ -132,41 +132,33 @@ check_if_irreducible(uint64_t possible_polynomial, uint64_t p, uint64_t m)
     check_field.characteristic = p;
     check_field.power = m;
     check_field.primative_in_power_n = 100;
-    struct extended_polynomial *s0, *t0, *r0, *possible_primitive, *need_check_gcd;
+    uint64_t s0[MAX_DEGREE], t0[MAX_DEGREE], r0[MAX_DEGREE], possible_primitive[MAX_DEGREE], need_check_gcd[MAX_DEGREE];
     bool result = 1;
-    possible_primitive = construct_polynomial_from_field_element(&check_field, possible_polynomial);
+    construct_polynomial_from_field_element(&check_field, possible_polynomial, possible_primitive);
     for(uint64_t i = 1; i < m; ++i){
-        need_check_gcd = get_polynomial_for_irruducuble(p, i);
+        get_polynomial_for_irruducuble(p, i, need_check_gcd);
         extended_euclidean_algorithm(&check_field, possible_primitive, 
-        need_check_gcd, &s0, &t0, &r0
+        need_check_gcd, s0, t0, r0
         );
         
-        free_extended_polynomial(s0);
-        free_extended_polynomial(t0);
-        free_extended_polynomial(need_check_gcd);
         
-        if(r0->degree != 1 || r0->coefs[0] != 1){
+        if(get_degree(r0) != 1 || r0[0] != 1){
             result = 0;
-            free_extended_polynomial(r0);
             break;
         }
-        free_extended_polynomial(r0);
         
     }
-    free_extended_polynomial(possible_primitive);
     return result;
 }
 
 
-struct extended_polynomial*
-get_polynomial_for_irruducuble(uint64_t p, uint64_t d)
+void
+get_polynomial_for_irruducuble(uint64_t p, uint64_t d, uint64_t need_check_gcd[MAX_DEGREE])
 {
-    struct extended_polynomial* result = make_zero_polynomial(1);
-    result->degree = 1;
-    result->coefs[0] = 1;
-    result = multiply_extended_polynomial_by_x_n(result, pow(p, d), NEED_FREE);
-    result->coefs[1] += (needed_type) p - 1;
-    return result;
+    memset(need_check_gcd, 0, MAX_DEGREE * sizeof(uint64_t));
+    need_check_gcd[1] = 1;
+    
+    need_check_gcd[1 << d] += 1;
 }
 
 int

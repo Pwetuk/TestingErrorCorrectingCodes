@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 #include "polynomials.h"
 
@@ -63,19 +64,8 @@ free_extended_polynomial(struct extended_polynomial* to_free)
     free(to_free);
 }
 
-struct extended_polynomial*
-construct_extended_polynomial_from_coefs(needed_type* coefs, int n){
-    struct extended_polynomial* result = malloc(sizeof(struct extended_polynomial));
-    result->coefs = malloc(sizeof(needed_type) * n);
-    for(int i = 0; i < n; ++i){
-        result->coefs[i] = coefs[i];
-    }
-    result->degree = n;
-    return result;
-}
-
 void
-print_extended_polynomial(struct extended_polynomial* to_print)
+print_extended_polynomial(uint64_t* to_print)
 {
     //if(to_print == NULL){
     //    printf("Poly is NULL\n");
@@ -91,418 +81,276 @@ print_extended_polynomial(struct extended_polynomial* to_print)
     //        printf("%lu * x^%d + ", to_print->coefs[i], i);   
     //    }
     //}
-    for(int i = 0; i < to_print->degree; ++i){
-        printf("%lu", to_print->coefs[i]);   
+    for(int i = 0; i < MAX_DEGREE; ++i){
+        printf("%lu \t", to_print[i]);   
     }
     printf("\n\n");
 }
 
-struct extended_polynomial*
-copy_extended_polynomial(struct extended_polynomial* poly)
+void
+copy_extended_polynomial(uint64_t* poly, uint64_t* res)
 {
-    struct extended_polynomial* result = malloc(sizeof(struct extended_polynomial));
-    result->degree = poly->degree;
-    result->coefs = malloc(sizeof(needed_type) * (result->degree + 1));
-    for(int i = 0; i < poly->degree; ++i){
-        result->coefs[i] = poly->coefs[i];
+    for(int i = 0; i < MAX_DEGREE; ++i){
+        res[i] = poly[i];
     }
-    return result;
 }
 
-struct extended_polynomial*
-add_two_extended_polynomials(struct finite_field* field, struct extended_polynomial* poly1, struct extended_polynomial* poly2)
+void
+add_two_extended_polynomials(struct finite_field* field, uint64_t* poly1, uint64_t* poly2)
 {
-    int total_degree = max(poly1->degree, poly2->degree);
-    struct extended_polynomial* result = malloc(sizeof(struct extended_polynomial));
-    int last_non_zero = 0; 
-    result->coefs = malloc(sizeof(needed_type) * total_degree);
-
-    for(int i = 0; i < max(poly1->degree, poly2->degree); ++i){
-        if(poly1->degree < i){
-            result->coefs[i] = poly2->coefs[i];
-            last_non_zero = i + 1;
-        }else if(poly2->degree < i){
-            result->coefs[i] = poly1->coefs[i];
-            last_non_zero = i + 1;
-        }else{
-            result->coefs[i] = add_in_field(field, (uint64_t) poly1->coefs[i], (uint64_t)poly2->coefs[i]);
-            if(result->coefs[i] != 0){
-                last_non_zero = i + 1;
-            }
-        }
-        
+    for(int i = 0; i < MAX_DEGREE; ++i){
+        poly1[i] = add_in_field(field, poly1[i], poly2[i]);
     }
-    result->degree = last_non_zero;
-    return result;
 }
 
-struct extended_polynomial*
-multiply_two_extended_polynomials(struct finite_field* field, struct extended_polynomial* poly1, struct extended_polynomial* poly2)
+void
+multiply_two_extended_polynomials(struct finite_field* field, uint64_t* poly1, uint64_t* poly2)
 {
-    //printf("We are now multiplying\n");
-    //print_extended_polynomial(poly1);
-    //print_extended_polynomial(poly2);
-    if(poly1->degree == 0 || poly2->degree == 0) return make_zero_polynomial(1);
-    int total_degree = poly1->degree + poly2->degree - 1;
-    struct extended_polynomial* result = malloc(sizeof(struct extended_polynomial));
-    result->degree = total_degree;
-    result->coefs = calloc(total_degree, sizeof(needed_type));
-    for(int i = 0; i < poly1->degree; ++i){
-        for(int j = 0; j < poly2->degree; ++j){
-            result->coefs[i + j] = add_in_field(field, multiply_in_field(field, poly1->coefs[i], poly2->coefs[j]), result->coefs[i + j]);
+    uint64_t tmp[MAX_DEGREE];
+    memcpy(tmp, poly1, sizeof(uint64_t) * MAX_DEGREE);
+
+    memset(poly1, 0, sizeof(uint64_t) * MAX_DEGREE);
+
+    int deg_poly1 = get_degree(tmp), deg_poly2 = get_degree(poly2);
+
+    for (int i = 0; i <= deg_poly1; ++i) {
+        uint64_t a = tmp[i];
+        if (a == 0) continue;
+        for (int j = 0; j <= deg_poly2 && (i + j) < MAX_DEGREE; ++j) {
+            uint64_t b = poly2[j];
+            if (b == 0) continue;
+            uint64_t prod = multiply_in_field(field, a, b);
+            poly1[i + j] = add_in_field(field, poly1[i + j], prod);
         }
     }
-
-    //print_extended_polynomial(result);
-    //printf("--------------\n\n");
-    return result;
+    
 }
 
 
-struct extended_polynomial*
-construct_minimal_polynomial_from_coset(struct finite_field* field, struct cyclotomic_coset* coset)
+void
+construct_minimal_polynomial_from_coset(struct finite_field* field, struct cyclotomic_coset* coset, uint64_t res[MAX_DEGREE])
 {
     int base_element = coset->from_el;
 
-    struct extended_polynomial* first_multiplier = malloc(sizeof(struct extended_polynomial));
-    struct extended_polynomial* second_multiplier = malloc(sizeof(struct extended_polynomial));
-    struct extended_polynomial* to_clear;
-    first_multiplier->degree = 2;
-    first_multiplier->coefs = malloc(sizeof(needed_type) * 2);
-    first_multiplier->coefs[1] = 1;
-    first_multiplier->coefs[0] = construct_inverse_element_add(field, find_primitive_in_power(field, base_element));
+    uint64_t first_multiplier[MAX_DEGREE];
+    uint64_t second_multiplier[MAX_DEGREE];
+    memset(first_multiplier, 0, MAX_DEGREE * sizeof(uint64_t));
+    uint64_t primitive_power = find_primitive_in_power(field, base_element);
+    first_multiplier[1] = 1;
+    
+    first_multiplier[0] = construct_inverse_element_add(field, primitive_power);
 
-    second_multiplier->degree = 2;
-    second_multiplier->coefs = malloc(sizeof(needed_type) * 2);
+    memset(second_multiplier, 0, MAX_DEGREE * sizeof(uint64_t));
 
     for(int i = 0; i < coset->size - 1; ++i){
         base_element *= field->characteristic;
-        second_multiplier->coefs[1] = 1;
-        second_multiplier->coefs[0] = construct_inverse_element_add(field, find_primitive_in_power(field, base_element));
+        second_multiplier[1] = 1;
+        second_multiplier[0] = construct_inverse_element_add(field, find_primitive_in_power(field, base_element));
 
-        to_clear = first_multiplier;
-        first_multiplier = multiply_two_extended_polynomials(field, to_clear, second_multiplier);
-        free_extended_polynomial(to_clear);
         
-        
+        multiply_two_extended_polynomials(field, first_multiplier, second_multiplier);
+        memset(second_multiplier, 0, MAX_DEGREE * sizeof(uint64_t));
     }
-
-    free_extended_polynomial(second_multiplier);
-
-    return first_multiplier;
+    memcpy(res, first_multiplier, sizeof(uint64_t) * MAX_DEGREE);
 }
 
 polynomial
-extended_polynomial_to_polynomial(struct finite_field* field, struct extended_polynomial* poly)
+extended_polynomial_to_polynomial(struct finite_field* field, uint64_t* poly)
 {
     polynomial result = 0;
-    for(int i = 0; i < poly->degree; ++i){
-        if(field->characteristic == 2 && poly->coefs[i] == 1){
+    for(int i = 0; i < MAX_DEGREE; ++i){
+        if(field->characteristic == 2 && poly[i] == 1){
             result += (1UL << i);
-        }else if(field->characteristic != 2){
-            result += poly->coefs[i] * pow(field->characteristic, i);
         }
     }
-    return result;
-}
-
-struct extended_polynomial*
-construct_generator_polynomial(struct finite_field* field, int number_of_errors)
-{
-    struct cyclotomic_cosets* cosets = generate_cosets_from_n_needed_elements(field, 2 * number_of_errors);
-
-    struct extended_polynomial* first_multiplier, *second_multiplier, *to_clear;
-    first_multiplier = construct_minimal_polynomial_from_coset(field, cosets->cosets[0]);
-    for(int i = 1; i < cosets->number_of_cosets; ++i){
-        second_multiplier = construct_minimal_polynomial_from_coset(field, cosets->cosets[i]);
-        to_clear = first_multiplier;
-        first_multiplier = multiply_two_extended_polynomials(field, to_clear, second_multiplier);
-        free_extended_polynomial(to_clear);
-        free_extended_polynomial(second_multiplier);
-    }
-
-    free_cosets_struct(cosets);
-
-
-
-    return first_multiplier;
-}
-
-struct extended_polynomial*
-find_inverse_by_add_for_polynomial(struct finite_field* field, struct extended_polynomial* a)
-{
-    struct extended_polynomial* result = malloc(sizeof(struct extended_polynomial));
-
-    result->degree = a->degree;
-    result->coefs = malloc(sizeof(needed_type) * (a->degree + 2));
-    if (result->coefs == NULL) {
-        printf("Something went horribly wrong\n");
-        free(result);
-        return NULL;
-    }
-
-    for (int i = 0; i < a->degree; ++i) {
-        needed_type temp = (needed_type)construct_inverse_element_add(field, a->coefs[i]);
-        result->coefs[i] = temp;
-    }
-    return result;
-}
-
-struct extended_polynomial*
-difference_of_two_polynomials(struct finite_field* field, struct extended_polynomial* a, struct extended_polynomial* b)
-{
-    //printf("We are now permoning difference\n");
-    //print_extended_polynomial(a);
-    //print_extended_polynomial(b);
-    int i = 0;
-    int result_degree = 0;
-    struct extended_polynomial* result = malloc(sizeof(struct extended_polynomial));
-    result->coefs = malloc(sizeof(needed_type) * max(a->degree, b->degree));
-    for(; i < min(a->degree, b->degree); ++i){
-        result->coefs[i] = add_in_field(field, a->coefs[i], construct_inverse_element_add(field, b->coefs[i]));
-        if(result->coefs[i] != 0) result_degree = i + 1;
-    }
-    if(i < b->degree){
-        for(; i < b->degree; ++i){
-            result->coefs[i] = construct_inverse_element_add(field, b->coefs[i]);
-        }
-        result_degree = b->degree;
-    }else if(i < a->degree){
-        for(; i < a->degree; ++i){
-            result->coefs[i] = a->coefs[i];
-        }
-        result_degree = a->degree;
-    }
-    result->degree = result_degree;
-    //print_extended_polynomial(result);
-    //printf("--------------\n\n");
     return result;
 }
 
 void
-divide_polynomials_with_remainder(struct finite_field* field, struct extended_polynomial* dividing,
-     struct extended_polynomial* divider, struct extended_polynomial** result, struct extended_polynomial** remainder)
+construct_generator_polynomial(struct finite_field* field, int number_of_errors, uint64_t res[MAX_DEGREE])
 {
-    int deg_a = dividing->degree - 1;
-    int deg_b = divider->degree - 1;
-    
-    if(deg_a < deg_b){
-        *remainder = copy_extended_polynomial(dividing);
-        *result = make_zero_polynomial(1);
+    struct cyclotomic_cosets* cosets = generate_cosets_from_n_needed_elements(field, 2 * number_of_errors);
+
+    uint64_t first_multiplier[MAX_DEGREE], second_multiplier[MAX_DEGREE];
+    construct_minimal_polynomial_from_coset(field, cosets->cosets[0], first_multiplier);
+    for(int i = 1; i < cosets->number_of_cosets; ++i){
+        construct_minimal_polynomial_from_coset(field, cosets->cosets[i], second_multiplier);
+        multiply_two_extended_polynomials(field, first_multiplier, second_multiplier);
+    }
+
+    free_cosets_struct(cosets);
+
+    memcpy(res, first_multiplier, sizeof(uint64_t) * MAX_DEGREE);
+}
+
+void
+find_inverse_by_add_for_polynomial(struct finite_field* field, uint64_t a[MAX_DEGREE], uint64_t res[MAX_DEGREE])
+{
+
+    for (int i = 0; i < MAX_DEGREE; ++i) {
+        res[i] = (needed_type)construct_inverse_element_add(field, a[i]);
+    }
+}
+
+void
+difference_of_two_polynomials(struct finite_field* field, uint64_t* a, uint64_t* b, uint64_t res[MAX_DEGREE])
+{
+    for(int i = 0; i < MAX_DEGREE; ++i){
+        res[i] = add_in_field(field, a[i], construct_inverse_element_add(field, b[i]));
+    }
+}
+
+void
+divide_polynomials_with_remainder(struct finite_field* field, uint64_t dividend[],
+    uint64_t divisor[], uint64_t result[MAX_DEGREE], uint64_t remainder[MAX_DEGREE])
+{
+    memset(result, 0, MAX_DEGREE * sizeof(uint64_t));
+    memcpy(remainder, dividend, MAX_DEGREE * sizeof(uint64_t));
+
+    int deg_divisor = get_degree(divisor);
+    int deg_dividend = get_degree(dividend);
+
+    if(deg_divisor < 0 || deg_dividend < deg_divisor){
         return;
     }
-    struct extended_polynomial* inverse_poly = find_inverse_by_add_for_polynomial(field, divider), *dividing_copy, *dividing_temp;
-    dividing_copy = copy_extended_polynomial(dividing);
-    *result = make_zero_polynomial(deg_a - deg_b + 1);
-    (*result)->degree = deg_a - deg_b + 1;
-    needed_type new_coef = 0;
-    while(deg_a >= deg_b){
-        struct extended_polynomial* shifted_inverse = multiply_extended_polynomial_by_x_n(inverse_poly, deg_a - deg_b, 0);
-        new_coef = 0;
-
-        while(dividing_copy->degree - 1 >= deg_a){
-            if(new_coef > field->characteristic){
-                printf("----------------------\n");
-                print_extended_polynomial(dividing);
-                print_extended_polynomial(divider);
-                print_extended_polynomial(shifted_inverse);
-                printf("----------------------\n");
-                *remainder = NULL;
-                return;
-            }
-            dividing_temp = dividing_copy;
-            dividing_copy = add_two_extended_polynomials(field, dividing_temp, shifted_inverse);
-            free_extended_polynomial(dividing_temp);
-            ++new_coef;
+    for(int i = deg_dividend - deg_divisor; i > -1;--i){
+        if(remainder[deg_divisor + i] == 0) continue;
+        result[i] = 1;
+        for(int j = 0; j <= deg_divisor; ++j){
+            remainder[j + i] = add_in_field(field, remainder[j + i], divisor[j]);
         }
-        (*result)->coefs[deg_a - deg_b] = new_coef;
-        deg_a = dividing_copy->degree - 1;
-
-        free_extended_polynomial(shifted_inverse);
     }
-    free_extended_polynomial(inverse_poly);
-    *remainder = copy_extended_polynomial(dividing_copy);
-    free_extended_polynomial(dividing_copy);
 }
 
 
 uint64_t
-find_value_from_root(struct finite_field* field, struct extended_polynomial* poly, int primitive_power)
+find_value_from_root(struct finite_field* field, uint64_t poly[MAX_DEGREE], int primitive_power)
 {
-    //printf(
-    //    "INserting: %lld", find_primitive_in_power(field, primitive_power)
-    //);
     uint64_t result = 0;
-    for(int i = 0; i < poly->degree; ++i){
+    for(int i = 0; i <= get_degree(poly); ++i){
         result = add_in_field(field, 
-            multiply_in_field(field, (uint64_t)poly->coefs[i], find_primitive_in_power(field, primitive_power * i)),
+            multiply_in_field(field, poly[i], find_primitive_in_power(field, primitive_power * i)),
             result);
-        //printf("Temp res: %lld\t", result);
     }
-    return result;
-}
-
-
-struct extended_polynomial*
-multiply_extended_polynomial_by_x_n(struct extended_polynomial* poly, int n, int need_free){
-    struct extended_polynomial* result = malloc(sizeof(struct extended_polynomial));
-    needed_type* new_coefs = calloc(poly->degree + n, sizeof(needed_type));
-    for(int i = 0; i < poly->degree; ++i){
-        new_coefs[i + n] = poly->coefs[i];
-    }
-    result->coefs = new_coefs;
-    result->degree = poly->degree + n;
-    //printf("At shift with n=%d: ", n);
-    //print_extended_polynomial(result);
-    if(need_free == 1) free_extended_polynomial(poly);
     return result;
 }
 
 int
-equal_polynomials(struct extended_polynomial* a, struct extended_polynomial* b){
+equal_polynomials(uint64_t* a, uint64_t* b){
     if(a == NULL || b == NULL){
         return 0;
     }
-    if(a->degree != b->degree) return 0;
-    for(int i = 0; i < a->degree; ++i){
-        if(a->coefs[i] != b->coefs[i]) return 0;
+    for(int i = 0; i < MAX_DEGREE; ++i){
+        if(a[i] != b[i]) return 0;
     }
 
     return 1;
 }
 
 
-struct extended_polynomial*
-make_zero_polynomial(int degree){
-    struct extended_polynomial* result = malloc(sizeof(struct extended_polynomial));
-    result->degree = 0;
-    result->coefs = calloc(degree, sizeof(needed_type));
-    return result;
-}
-
 void
-extended_euclidean_algorithm(struct finite_field* field, struct extended_polynomial* el, struct extended_polynomial* f, 
-    struct extended_polynomial** s0, struct extended_polynomial** t0, struct extended_polynomial** r0)
+extended_euclidean_algorithm(struct finite_field* field, uint64_t* el, uint64_t* f, 
+    uint64_t s0[MAX_DEGREE], uint64_t t0[MAX_DEGREE], uint64_t r0[MAX_DEGREE])
 {
-    *r0 = copy_extended_polynomial(el);
-    *s0 = make_zero_polynomial(1);
-    *t0 = make_zero_polynomial(1); 
+    int k = 0;
+    copy_extended_polynomial(el, r0);
+    memset(s0, 0, sizeof(uint64_t) * MAX_DEGREE);
+    memset(t0, 0, sizeof(uint64_t) * MAX_DEGREE);
     
-    struct extended_polynomial* r1 = copy_extended_polynomial(f);
-    struct extended_polynomial* s1 = make_zero_polynomial(1);
-    struct extended_polynomial* t1 = make_zero_polynomial(1);
-    struct extended_polynomial* q, *r, *temp, *multiply_temp;
-    (*s0)->coefs[0] = 1;
-    t1->coefs[0] = 1;
 
-    (*s0)->degree = 1;
-    t1->degree = 1;
+    uint64_t r1[MAX_DEGREE], s1[MAX_DEGREE], t1[MAX_DEGREE], q[MAX_DEGREE], r[MAX_DEGREE], temp[MAX_DEGREE], multiply_temp[MAX_DEGREE];
+    copy_extended_polynomial(f, r1);
+    memset(s1, 0, sizeof(uint64_t) * MAX_DEGREE);
+    memset(t1, 0, sizeof(uint64_t) * MAX_DEGREE);
+    s0[0] = 1;
+    t1[0] = 1;
 
-    while(r1->degree > 0){
-        divide_polynomials_with_remainder(field, (*r0), r1, &q, &r);
-        free_extended_polynomial(r);
+    while(get_degree(r1) >= 0){
+        ++k;
+        divide_polynomials_with_remainder(field, r0, r1, q, r);
+        copy_extended_polynomial(r0, temp);
+        copy_extended_polynomial(r1, r0);
+        copy_extended_polynomial(q, multiply_temp);
 
-        temp = (*r0);
-        (*r0) = r1;
-        multiply_temp = multiply_two_extended_polynomials(field, q, r1);
-        r1 = difference_of_two_polynomials(field, temp, multiply_temp);
+        multiply_two_extended_polynomials(field, multiply_temp, r1);
+        difference_of_two_polynomials(field, temp, multiply_temp, r1);
+
         
-        free_extended_polynomial(multiply_temp);
-        free_extended_polynomial(temp);
-
-
-        temp = (*s0);
-        (*s0) = s1;
-        multiply_temp = multiply_two_extended_polynomials(field, q, s1);
-        s1 = difference_of_two_polynomials(field, temp, multiply_temp);
+        copy_extended_polynomial(s0, temp);
+        copy_extended_polynomial(s1, s0);
+        copy_extended_polynomial(q, multiply_temp);
         
-        free_extended_polynomial(multiply_temp);
-        free_extended_polynomial(temp);
+    
 
-        temp = (*t0);
-        (*t0) = t1;
-        multiply_temp = multiply_two_extended_polynomials(field, q, t1);
-        t1 = difference_of_two_polynomials(field, temp, multiply_temp);
+        multiply_two_extended_polynomials(field, multiply_temp, s1);
+        difference_of_two_polynomials(field, temp, multiply_temp, s1);
         
-        free_extended_polynomial(multiply_temp);
-        free_extended_polynomial(temp);
-        
-        free_extended_polynomial(q);
 
+
+        copy_extended_polynomial(t0, temp);
+        copy_extended_polynomial(t1, t0);
+
+        multiply_two_extended_polynomials(field, q, t1);
+
+
+        difference_of_two_polynomials(field, temp, q, t1);
     }
-    free_extended_polynomial(r1);
-    free_extended_polynomial(s1);
-    free_extended_polynomial(t1);
 }
 
 uint64_t
 construct_inverse_element_multiply(struct finite_field* field, uint64_t el)
 {
-    struct extended_polynomial* t0, *s0, *r0;
-    struct extended_polynomial *el1 = construct_polynomial_from_field_element(field, get_primitive_polynomial(field));
-    struct extended_polynomial *el2 = construct_polynomial_from_field_element(field, el);
-    extended_euclidean_algorithm(field, el1, el2, &s0, &t0, &r0);
+    uint64_t t0[MAX_DEGREE], s0[MAX_DEGREE], r0[MAX_DEGREE];
 
-    free_extended_polynomial(s0);
-    free_extended_polynomial(r0);
+    
+    uint64_t el1[MAX_DEGREE], el2[MAX_DEGREE];
+    construct_polynomial_from_field_element(field, get_primitive_polynomial(field), el1);
+    construct_polynomial_from_field_element(field, el, el2);
+    extended_euclidean_algorithm(field, el1, el2, s0, t0, r0);
 
-    free_extended_polynomial(el1);
-    free_extended_polynomial(el2);
-
-    return get_field_el_from_polynomial(field, t0, NEED_FREE);
+    return get_field_el_from_polynomial(field, t0);
 }
 
-struct extended_polynomial*
-construct_polynomial_from_field_element(struct finite_field* field, uint64_t el)
+void
+construct_polynomial_from_field_element(struct finite_field* field, uint64_t el, uint64_t res[MAX_DEGREE])
 {
-    struct extended_polynomial* result = malloc(sizeof(struct extended_polynomial));
-    uint64_t temp_el = el;
+    memset(res, 0, sizeof(uint64_t) * MAX_DEGREE);
     for(int i = 0; el != 0; ++i){
-        if(field->characteristic == 2){
-            el >>= 1;
-        }else{
-            el /= field->characteristic;       
-        }
-        result->degree = i + 1;
-    }
-
-    el = temp_el;
-
-    result->coefs = calloc(result->degree + 1, sizeof(needed_type));
-    for(int i = 0; el != 0; ++i){
-        result->coefs[i] = (needed_type)el % field->characteristic;
+        res[i] = el % field->characteristic;
         if(field->characteristic == 2){
             el >>= 1;
         }else{
             el /= field->characteristic;       
         }
     }
-
-    return result;
 }
 
 uint64_t
-get_field_el_from_polynomial(struct finite_field* field, struct extended_polynomial* poly, int need_free)
+get_field_el_from_polynomial(struct finite_field* field, uint64_t poly[MAX_DEGREE])
 {
     uint64_t result = 0;
-    for(int i = 0; i < poly->degree; ++i){
-        result += pow(field->characteristic, i) * poly->coefs[i];
+    for(int i = 0; i < MAX_DEGREE; ++i){
+        result += pow(field->characteristic, i) * poly[i];
     }
-    if(need_free == 1) free_extended_polynomial(poly);
     return result;
 }
 
-struct extended_polynomial*
-multiply_polynomial_by_element(struct finite_field* field, struct extended_polynomial* poly, uint64_t el, int need_free)
+void
+multiply_polynomial_by_element(struct finite_field* field, uint64_t poly[MAX_DEGREE], uint64_t el)
 {
-    struct extended_polynomial* result = copy_extended_polynomial(poly);
-    int initial = result->degree;
-
-    for(int i = 0; i < initial; ++i){
-        result->coefs[i] = multiply_in_field(field, result->coefs[i], el);
-        if(result->coefs[i] != 0) result->degree = i + 1;
+    for(int i = 0; i < MAX_DEGREE; ++i){
+        poly[i] = multiply_in_field(field, poly[i], el);
     }
 
-    if(need_free == NEED_FREE) free_extended_polynomial(poly);
-    return result;
+}
+
+int
+get_degree(uint64_t poly[MAX_DEGREE])
+{
+    for(int i = MAX_DEGREE - 1; i >= 0; --i){
+        if(poly[i] != 0){
+            return i;
+        }
+    }
+    return -1;
 }

@@ -52,7 +52,7 @@ int main(int argc, char** argv){
         }
         return 0;
     }
-    
+    /*
     unsigned int characteristic;
     uint64_t power;
     uint64_t res_len, decoded_len;
@@ -66,12 +66,12 @@ int main(int argc, char** argv){
     struct bch_code* bch_test = init_bch(characteristic, power, number_of_errors, 0);
     clock_t end = clock();
     double cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
-
+    
     printf("Inited bch:%f seconds, %lu\n", cpu_time_sec, find_primitive_in_power(bch_test->field, 1023));
     print_extended_polynomial(bch_test->generator);
     
     uint64_t input_arr[PAGE_SIZE * NUM_PAGES];
-
+    
     for(int i = 0; i < PAGE_SIZE * NUM_PAGES; ++i){
         input_arr[i] = ((uint64_t) rand() << 32) | rand();
     }
@@ -83,42 +83,43 @@ int main(int argc, char** argv){
     uint64_t sys2 = read_total_jiffies(), proc2 = read_proc_jiffies();
     double cpu_pct = 100.0 * (proc2 - proc1) / (double)(sys2 - sys1);
     printf("Process CPU load: %.2f%%\n", cpu_pct);
-
+    
     cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
     printf("Encoded: %f seconds, %d\n", cpu_time_sec, res_len);
     //printf("\n\n----------------------\n\n");
     //for(int i = 0; i < NUM_PAGES * PAGE_SIZE; ++i){
-    //    uint64_t el = input_arr[i];
-    //    for(int j = 0; j < 64; ++j){
-    //        printf("%lu", el % 2);
-    //        el >>= 1;
-    //    }
-    //    
-    //}
-    //printf("\n\n----------------------\n\n");
-
-    for(int i = 0; i < 2; ++i){
-        start = clock();
-        uint64_t *decoded = bch_decode_arr(bch_test, encoded, res_len, &decoded_len);
-        end = clock();
-        cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
-        printf("Decoded %f seconds with %d errors\n", cpu_time_sec, i);
-        put_error(encoded, res_len);
-        int result = 1;
-        for(uint64_t i = 0; i < NUM_PAGES * PAGE_SIZE; ++i){
-            result &= (decoded[i] == input_arr[i]);
-            if(result == 0){
-                printf("Expected: %lu, got %lu in ind: %lu\n", input_arr[i], decoded[i], i);
-                break;
+        //    uint64_t el = input_arr[i];
+        //    for(int j = 0; j < 64; ++j){
+            //        printf("%lu", el % 2);
+            //        el >>= 1;
+            //    }
+            //    
+            //}
+            //printf("\n\n----------------------\n\n");
+            
+            for(int i = 0; i < 2; ++i){
+                start = clock();
+                uint64_t *decoded = bch_decode_arr(bch_test, encoded, res_len, &decoded_len);
+                end = clock();
+                cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
+                printf("Decoded %f seconds with %d errors\n", cpu_time_sec, i);
+                put_error(encoded, res_len);
+                int result = 1;
+                for(uint64_t i = 0; i < NUM_PAGES * PAGE_SIZE; ++i){
+                    result &= (decoded[i] == input_arr[i]);
+                    if(result == 0){
+                        printf("Expected: %lu, got %lu in ind: %lu\n", input_arr[i], decoded[i], i);
+                        break;
+                    }
+                }
+                
+                printf("Result is: %d\n", result);
+                
+                free(decoded);
             }
-        }
-    
-        printf("Result is: %d\n", result);
-        
-        free(decoded);
-    }
-
+            
     free(encoded);
+    */
     /*
     start = clock();
     for(int i = 0; i < PAGE_SIZE * NUM_PAGES; ++i){
