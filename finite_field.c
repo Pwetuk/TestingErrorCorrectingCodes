@@ -127,7 +127,7 @@ construct_gf_p_m(uint64_t characteristic, uint64_t power)
 
 int
 check_if_irreducible(uint64_t possible_polynomial, uint64_t p, uint64_t m)
-{
+{   
     struct finite_field check_field;
     check_field.characteristic = p;
     check_field.power = m;
@@ -137,12 +137,13 @@ check_if_irreducible(uint64_t possible_polynomial, uint64_t p, uint64_t m)
     construct_polynomial_from_field_element(&check_field, possible_polynomial, possible_primitive);
     for(uint64_t i = 1; i < m; ++i){
         get_polynomial_for_irruducuble(p, i, need_check_gcd);
+        get_degree(need_check_gcd);
         extended_euclidean_algorithm(&check_field, possible_primitive, 
         need_check_gcd, s0, t0, r0
         );
+    
         
-        
-        if(get_degree(r0) != 1 || r0[0] != 1){
+        if(get_degree(r0) != 0 || r0[0] != 1){
             result = 0;
             break;
         }

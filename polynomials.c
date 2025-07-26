@@ -224,13 +224,13 @@ divide_polynomials_with_remainder(struct finite_field* field, uint64_t dividend[
 
 
 uint64_t
-find_value_from_root(struct finite_field* field, uint64_t poly[MAX_DEGREE], int primitive_power)
+find_value_from_root(struct finite_field* field, uint64_t poly[MAX_DEGREE], int primitive_power, int deg, uint64_t dir)
 {
     uint64_t result = 0;
-    for(int i = 0; i <= get_degree(poly); ++i){
-        result = add_in_field(field, 
-            multiply_in_field(field, poly[i], find_primitive_in_power(field, primitive_power * i)),
-            result);
+    int d = deg;
+    for(int i = d; i >= 0; --i){
+        result = multiply_in_field(field, result, dir);
+        result = add_in_field(field, result, poly[i]);
     }
     return result;
 }

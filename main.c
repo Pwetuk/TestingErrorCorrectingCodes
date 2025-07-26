@@ -3,6 +3,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <sys/resource.h>
+#include <math.h>
 
 #include "bch_tests.h"
 
@@ -12,7 +13,7 @@
 void
 put_error(uint64_t *arr, uint64_t len_arr){
     for(uint64_t i = 0; i < len_arr; ++i){
-        arr[i] ^= (1UL << rand());
+        arr[i] ^= (1UL << (rand() % 31));
     }
 }
 
@@ -52,6 +53,64 @@ int main(int argc, char** argv){
         }
         return 0;
     }
+
+    struct bch_code* bch_test = init_bch(2, 5, 3, 0);
+    printf("Gen: %d\n", get_degree(bch_test->generator));
+
+    uint64_t to_encode, encoding_poly[MAX_DEGREE], encoded[MAX_DEGREE], decoded[MAX_DEGREE], to_decode, decoding_poly[MAX_DEGREE];
+    memset(encoding_poly, 0, MAX_DEGREE * sizeof(uint64_t));
+
+    uint64_t input_arr[PAGE_SIZE * NUM_PAGES], encoded_arr[PAGE_SIZE * NUM_PAGES], decoded_arr[PAGE_SIZE * NUM_PAGES];
+
+    for(int i = 0; i < PAGE_SIZE * NUM_PAGES; ++i){
+        input_arr[i] = (((uint64_t) rand() << 32) | (uint64_t) rand()) % (1UL << (bch_test->data_length - 1));
+    }
+
+    clock_t start = clock();
+    for(int i = 0; i < PAGE_SIZE * NUM_PAGES; ++i){
+        to_encode = input_arr[i];
+        for(int i = 0; i < bch_test->data_length; ++i){
+            encoding_poly[i] = to_encode % bch_test->field->characteristic;
+            to_encode >>= 1;
+        }
+        //printf("Enc poly: ");
+        //print_extended_polynomial(encoding_poly);
+        encode_bch(bch_test, encoding_poly, encoded);
+        encoded_arr[i] = extended_polynomial_to_polynomial(bch_test->field, encoded);
+    }
+    clock_t end = clock();
+    double cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
+    printf("Encoded: %f seconds\n", cpu_time_sec);
+
+
+    for(int i = 0; i <= 3; ++i){
+        put_error(encoded_arr, PAGE_SIZE * NUM_PAGES);
+        memset(decoding_poly, 0, MAX_DEGREE * sizeof(uint64_t));
+        start = clock();
+        for(int j = 0; j < PAGE_SIZE * NUM_PAGES; ++j){
+            to_decode = encoded_arr[j];
+            for(int k = 0; k < 32 - 1; ++k){
+                decoding_poly[k] = to_decode & 1;
+                to_decode >>= 1;
+            }
+            decode_bch(bch_test, decoding_poly, decoded);
+            decoded_arr[j] = extended_polynomial_to_polynomial(bch_test->field, decoded);
+        }
+        end = clock();
+        cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
+        printf("Decoded %f seconds with %d errors\n", cpu_time_sec, i);
+        int result = 1;
+        for(int ind = 0; ind < NUM_PAGES * PAGE_SIZE; ++ind){
+            result &= (decoded_arr[ind] == input_arr[ind]);
+            if(result != 1){
+                printf("%d, Decoded: %lu, Inputed: %lu, Encoded: %lu\n", ind, decoded_arr[ind], input_arr[ind], encoded_arr[ind]);
+                break;
+            }
+        }
+        printf("Result is %d\n", result);
+        printf("Encoded_arr[0]: %lu\n", encoded_arr[0]);
+    }
+    free_bch_code(bch_test);
     /*
     unsigned int characteristic;
     uint64_t power;
@@ -158,7 +217,7 @@ int main(int argc, char** argv){
     }
 
     
-    free_bch_code(bch_test);
+    
     struct rusage ru;
     getrusage(RUSAGE_SELF, &ru);
     printf("Peak memory usage: %ld\n", ru.ru_maxrss);
