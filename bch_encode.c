@@ -71,11 +71,13 @@ calculate_syndrome(struct finite_field* field, uint64_t encoded_message[MAX_DEGR
 {
     int number_of_not_null = 0;
     int d = get_degree(encoded_message);
+    uint64_t need_to_check = 2;
     for(int i = 0; i < 2 * number_of_errors; ++i){
-        syndrome[i] = find_value_from_root(field, encoded_message, i + 1, d, 2);
+        syndrome[i] = find_value_from_root(field, encoded_message, i + 1, d, need_to_check);
         if(syndrome[i] != 0){
             number_of_not_null = 1;
         }
+        need_to_check = multiply_in_field(field, need_to_check, 2);
     }
     return number_of_not_null;
 }
@@ -139,7 +141,7 @@ chien_search(struct finite_field* field, uint64_t* locator, int number_of_errors
 
     uint64_t n = 1 << field->power;
     uint64_t pos;
-    uint64_t primirive_inversed = construct_inverse_element_multiply(field, 2);
+    uint64_t need_to_check = construct_inverse_element_multiply(field, 2);
     int err_pos = 0;
     int deg = get_degree(locator);
 
@@ -147,7 +149,8 @@ chien_search(struct finite_field* field, uint64_t* locator, int number_of_errors
     memset(result, -1, sizeof(int) * MAX_DEGREE);
 
     for(uint64_t i = 0; i < n - 1; ++i){
-        pos = find_value_from_root(field, locator, -i, deg, primirive_inversed);
+
+        pos = find_value_from_root(field, locator, -i, deg, need_to_check);
         if(pos == 0){
             result[err_pos] = i;
             ++err_pos;
@@ -155,6 +158,7 @@ chien_search(struct finite_field* field, uint64_t* locator, int number_of_errors
                 break;
             }
         }
+        need_to_check = multiply_in_field(field, need_to_check, 2);
     }
 }
 

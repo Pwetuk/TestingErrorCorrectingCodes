@@ -337,7 +337,10 @@ syndrom_test()
     int result = 1;
     for(int i = 0; i < 6; ++i){
         result &= (correct_syndrome[i] == syndrome[i]);
+        printf("%lu\t", syndrome[i]);
     }
+    printf("\n");
+
 
     if(result != 1){
         printf("Syndrome test failed\n");

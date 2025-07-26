@@ -7,7 +7,7 @@
 
 #include "bch_tests.h"
 
-#define PAGE_SIZE 512
+#define PAGE_SIZE 1058
 #define NUM_PAGES 1
 
 void
@@ -66,6 +66,8 @@ int main(int argc, char** argv){
         input_arr[i] = (((uint64_t) rand() << 32) | (uint64_t) rand()) % (1UL << (bch_test->data_length - 1));
     }
 
+    uint64_t sys1 = read_total_jiffies(), proc1 = read_proc_jiffies();
+    printf("%lu\n", sys1);
     clock_t start = clock();
     for(int i = 0; i < PAGE_SIZE * NUM_PAGES; ++i){
         to_encode = input_arr[i];
@@ -79,13 +81,16 @@ int main(int argc, char** argv){
         encoded_arr[i] = extended_polynomial_to_polynomial(bch_test->field, encoded);
     }
     clock_t end = clock();
+    uint64_t sys2 = read_total_jiffies(), proc2 = read_proc_jiffies();
+    double cpu_pct = 100.0 * (proc2 - proc1) / (double)(sys2 - sys1);
+    printf("Process CPU load: %.2f%%\n", cpu_pct);
     double cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
     printf("Encoded: %f seconds\n", cpu_time_sec);
 
 
     for(int i = 0; i <= 3; ++i){
-        put_error(encoded_arr, PAGE_SIZE * NUM_PAGES);
         memset(decoding_poly, 0, MAX_DEGREE * sizeof(uint64_t));
+        sys1 = read_total_jiffies(), proc1 = read_proc_jiffies();
         start = clock();
         for(int j = 0; j < PAGE_SIZE * NUM_PAGES; ++j){
             to_decode = encoded_arr[j];
@@ -97,8 +102,11 @@ int main(int argc, char** argv){
             decoded_arr[j] = extended_polynomial_to_polynomial(bch_test->field, decoded);
         }
         end = clock();
+        sys2 = read_total_jiffies(), proc2 = read_proc_jiffies();
         cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
         printf("Decoded %f seconds with %d errors\n", cpu_time_sec, i);
+        cpu_pct = 100.0 * (proc2 - proc1) / (double)(sys2 - sys1);
+        printf("Process CPU load: %.2f%%\n", cpu_pct);
         int result = 1;
         for(int ind = 0; ind < NUM_PAGES * PAGE_SIZE; ++ind){
             result &= (decoded_arr[ind] == input_arr[ind]);
@@ -109,6 +117,7 @@ int main(int argc, char** argv){
         }
         printf("Result is %d\n", result);
         printf("Encoded_arr[0]: %lu\n", encoded_arr[0]);
+        put_error(encoded_arr, PAGE_SIZE * NUM_PAGES);
     }
     free_bch_code(bch_test);
     /*
