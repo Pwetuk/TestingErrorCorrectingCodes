@@ -47,7 +47,6 @@ decode_bch(struct bch_code* bch_code_struct, uint64_t message[MAX_DEGREE], uint6
     
     int result_deg = bch_code_struct->data_length;
     int n = bch_code_struct->n - 1;
-    int messg_degree = get_degree(message);
     for(int i = 0; i < bch_code_struct->data_length; ++i){
         result[i] = message[n - result_deg + 1 + i];
     }

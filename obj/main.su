@@ -1,0 +1,4 @@
+main.c:14:1:put_error	64	static
+main.c:21:1:prepare_arr	96	static
+main.c:50:1:measure_bch	6320	static
+main.c:117:5:main	48	static

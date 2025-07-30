@@ -154,7 +154,7 @@ check_if_irreducible(uint64_t possible_polynomial, uint64_t p, uint64_t m)
 
 
 void
-get_polynomial_for_irreducible(uint64_t p, uint64_t d, uint64_t need_check_gcd[MAX_DEGREE])
+get_polynomial_for_irreducible(uint64_t, uint64_t d, uint64_t *need_check_gcd)
 {
     memset(need_check_gcd, 0, MAX_DEGREE * sizeof(uint64_t));
     need_check_gcd[1] = 1;
@@ -189,8 +189,8 @@ check_if_primitive(uint64_t possible_polynomial, uint64_t p, uint64_t m)
 uint64_t*
 find_prime_divisors(uint64_t n, int *length)
 {
-    uint64_t *primes = malloc(sizeof(uint64_t) * 64), *new_primes;
-    int size = 64, count = 0;
+    uint64_t *primes = malloc(sizeof(uint64_t) * 64);
+    int count = 0;
 
     if (n % 2 == 0) {
         primes[count] = 2;

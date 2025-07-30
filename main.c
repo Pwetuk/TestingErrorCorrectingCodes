@@ -5,33 +5,16 @@
 #include <sys/resource.h>
 #include <math.h>
 
-#include "bch_encode.h"
+#include "bch_tests.h"
 
 #define PAGE_SIZE 512
 #define NUM_PAGES 1
 
 void
-put_error(uint64_t *arr, uint64_t len_arr){
+put_error(uint64_t *arr, uint64_t len_arr, uint64_t len){
     for(uint64_t i = 0; i < len_arr; ++i){
-        arr[i] ^= (1UL << (rand() % 16));
+        arr[i] ^= (1UL << (rand() % len));
     }
-}
-
-static uint64_t read_total_jiffies(void) {
-    FILE *f = fopen("/proc/stat","r");
-    uint64_t user, nice, sys, idle;
-    fscanf(f, "cpu  %lu %lu %lu %lu", &user, &nice, &sys, &idle);
-    fclose(f);
-    return user + nice + sys + idle;
-}
-
-static uint64_t read_proc_jiffies(void) {
-    FILE *f = fopen("/proc/self/stat","r");
-    for(int i=0; i<13; i++) fscanf(f, "%*s");
-    uint64_t utime, stime;
-    fscanf(f, "%lu %lu", &utime, &stime);
-    fclose(f);
-    return utime + stime;
 }
 
 uint64_t*
@@ -70,10 +53,11 @@ measure_bch(int p, int power, int t){
     clock_t end = clock();
     double cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
     printf("Init bch: %f seconds, %d\n", cpu_time_sec, 0);
+
     printf("Gen: %d\n", get_degree(bch_test->generator));
 
     int len_res;
-    uint64_t to_encode, encoding_poly[MAX_DEGREE], encoded[MAX_DEGREE], decoded[MAX_DEGREE], to_decode, decoding_poly[MAX_DEGREE], temp;
+    uint64_t to_encode, encoding_poly[MAX_DEGREE], encoded[MAX_DEGREE], decoded[MAX_DEGREE], to_decode, decoding_poly[MAX_DEGREE];
     memset(encoding_poly, 0, MAX_DEGREE * sizeof(uint64_t));
     memset(decoding_poly, 0, MAX_DEGREE * sizeof(uint64_t));
 
@@ -91,7 +75,6 @@ measure_bch(int p, int power, int t){
     encoded_arr = malloc(sizeof(uint64_t) * len_res);
     decoded_arr = malloc(sizeof(uint64_t) * len_res);
 
-    uint64_t sys1 = read_total_jiffies(), proc1 = read_proc_jiffies();
     start = clock();
 
     for(int i = 0; i < len_res; ++i){
@@ -104,6 +87,7 @@ measure_bch(int p, int power, int t){
         encoded_arr[i] = extended_polynomial_to_polynomial(bch_test->field, encoded);
     }
     end = clock();
+
     cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
     printf("Encoded: %f seconds, %d\n", cpu_time_sec, 0);
 
@@ -111,7 +95,7 @@ measure_bch(int p, int power, int t){
         start = clock();
         for(int i = 0; i < len_res; ++i){
             to_decode = encoded_arr[i];
-            for(int i = 0; i < bch_test->n; ++i){
+            for(uint64_t i = 0; i < bch_test->n; ++i){
                 decoding_poly[i] = to_decode % bch_test->field->characteristic;
                 to_decode >>= 1;
             }
@@ -122,7 +106,7 @@ measure_bch(int p, int power, int t){
         end = clock();
         double cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
         printf("Decoded with %d errors: %f seconds\n", n, cpu_time_sec);
-        put_error(encoded_arr, len_res);
+        put_error(encoded_arr, len_res, bch_test->n - 1);
     }
     free_bch_code(bch_test);
     free(prepared);
@@ -132,6 +116,24 @@ measure_bch(int p, int power, int t){
 
 int main(int argc, char** argv){
     
+    int tests_result = 0;
+    int was_testing = 1;
+    if(argc > 1 && strcmp(argv[1], "test") == 0){
+        tests_result = run_tests();
+    }else if(argc > 1 && strcmp(argv[1], "ttest") == 0){
+        tests_result = temp_tests();
+    }else{
+        was_testing = 0;
+    }
+
+    if(was_testing == 1){
+        if(tests_result == 1){
+            printf("All tests succeded\n");
+        }else{
+            printf("Something went wrong\n");
+        }
+        return 0;
+    }
     
     measure_bch(2, 5, 2);
     measure_bch(2, 5, 3);
