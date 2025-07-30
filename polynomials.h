@@ -5,7 +5,7 @@
 
 #include "finite_field.h"
 
-#define MAX_DEGREE 32
+#define MAX_DEGREE 64
 
 typedef uint64_t needed_type;
 
@@ -88,7 +88,7 @@ divide_polynomials_with_remainder(struct finite_field* field, uint64_t* dividing
     uint64_t result[MAX_DEGREE], uint64_t remainder[MAX_DEGREE]);
 
 uint64_t
-find_value_from_root(struct finite_field* field, uint64_t poly[MAX_DEGREE], int primitive_power, int deg, uint64_t dir);
+find_value_from_root(struct finite_field* field, uint64_t poly[MAX_DEGREE], int deg, uint64_t dir);
 
 int
 equal_polynomials(uint64_t* a, uint64_t* b);

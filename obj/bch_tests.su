@@ -1,0 +1,14 @@
+bch_tests.c:9:1:run_tests	32	static
+bch_tests.c:28:1:temp_tests	16	static
+bch_tests.c:57:1:test_in_characteristics_2_first	1104	static
+bch_tests.c:85:1:test_in_characteristics_2_second	1104	static
+bch_tests.c:114:1:test_in_characteristics_2_third	1104	static
+bch_tests.c:236:1:temp_test1	3152	static
+bch_tests.c:264:1:temp_test2	64	static
+bch_tests.c:276:1:temp_test3	32	static
+bch_tests.c:292:1:encode_test1	1600	static
+bch_tests.c:321:1:syndrom_test	1152	static
+bch_tests.c:354:5:inverse_test	64	static
+bch_tests.c:370:1:locator_test	1136	static
+bch_tests.c:397:1:chien_test	1888	static
+bch_tests.c:433:1:decode_test	1088	static

@@ -67,20 +67,6 @@ free_extended_polynomial(struct extended_polynomial* to_free)
 void
 print_extended_polynomial(uint64_t* to_print)
 {
-    //if(to_print == NULL){
-    //    printf("Poly is NULL\n");
-    //    return;
-    //}
-    //printf("Degree: %d\t", to_print->degree);
-    //if(to_print->degree == 0) {
-    //    printf("\n\n");
-    //    return;
-    //}
-    //for(int i = 0; i < to_print->degree; ++i){
-    //    if(to_print->coefs[i] != 0){
-    //        printf("%lu * x^%d + ", to_print->coefs[i], i);   
-    //    }
-    //}
     for(int i = 0; i < MAX_DEGREE; ++i){
         printf("%lu \t", to_print[i]);   
     }
@@ -196,7 +182,7 @@ void
 difference_of_two_polynomials(struct finite_field* field, uint64_t* a, uint64_t* b, uint64_t res[MAX_DEGREE])
 {
     for(int i = 0; i < MAX_DEGREE; ++i){
-        res[i] = add_in_field(field, a[i], construct_inverse_element_add(field, b[i]));
+        res[i] = add_in_field(field, a[i], b[i]);
     }
 }
 
@@ -224,7 +210,7 @@ divide_polynomials_with_remainder(struct finite_field* field, uint64_t dividend[
 
 
 uint64_t
-find_value_from_root(struct finite_field* field, uint64_t poly[MAX_DEGREE], int primitive_power, int deg, uint64_t dir)
+find_value_from_root(struct finite_field* field, uint64_t poly[MAX_DEGREE], int deg, uint64_t dir)
 {
     uint64_t result = 0;
     int d = deg;
@@ -241,7 +227,7 @@ equal_polynomials(uint64_t* a, uint64_t* b){
         return 0;
     }
     for(int i = 0; i < MAX_DEGREE; ++i){
-        if(a[i] != b[i]) return 0;
+        if(a[i] != b[i]) return 0;        
     }
 
     return 1;

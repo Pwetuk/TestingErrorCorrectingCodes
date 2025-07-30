@@ -1,0 +1,713 @@
+desc: --stacks=yes
+cmd: ./my_program
+time_unit: i
+#-----------
+snapshot=0
+#-----------
+time=0
+mem_heap_B=0
+mem_heap_extra_B=0
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=1
+#-----------
+time=1293333
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=8488
+heap_tree=empty
+#-----------
+snapshot=2
+#-----------
+time=3249493
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=8488
+heap_tree=empty
+#-----------
+snapshot=3
+#-----------
+time=4505790
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=8320
+heap_tree=empty
+#-----------
+snapshot=4
+#-----------
+time=6126168
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=6784
+heap_tree=empty
+#-----------
+snapshot=5
+#-----------
+time=7107268
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=17256
+heap_tree=peak
+n6: 6288 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1568 0x4005BB0: prepare_arr (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+  n0: 1568 0x4005F13: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 1568 0x4005FF5: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 1568 0x4006010: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n1: 1024 0x4A030BC: _IO_file_doallocate (in /usr/lib/libc.so.6)
+  n2: 1024 0x4A13105: _IO_doallocbuf (in /usr/lib/libc.so.6)
+   n1: 1024 0x4A11078: _IO_file_overflow (in /usr/lib/libc.so.6)
+    n1: 1024 0x4A11BAA: _IO_file_xsputn (in /usr/lib/libc.so.6)
+     n1: 1024 0x49DED65: ??? (in /usr/lib/libc.so.6)
+      n1: 1024 0x49DEE4B: ??? (in /usr/lib/libc.so.6)
+       n1: 1024 0x49EA684: ??? (in /usr/lib/libc.so.6)
+        n1: 1024 0x49DE4F2: printf (in /usr/lib/libc.so.6)
+         n0: 1024 0x4005E1C: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+   n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 536 0x4003EB5: init_bch (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+  n0: 536 0x4005DAD: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 24 in 6 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=6
+#-----------
+time=8207525
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16704
+heap_tree=empty
+#-----------
+snapshot=7
+#-----------
+time=9942525
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=17256
+heap_tree=empty
+#-----------
+snapshot=8
+#-----------
+time=11902779
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=14632
+heap_tree=empty
+#-----------
+snapshot=9
+#-----------
+time=13140544
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=10960
+heap_tree=empty
+#-----------
+snapshot=10
+#-----------
+time=14343423
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=14552
+heap_tree=empty
+#-----------
+snapshot=11
+#-----------
+time=15200128
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=8320
+heap_tree=empty
+#-----------
+snapshot=12
+#-----------
+time=16569981
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16712
+heap_tree=detailed
+n6: 6288 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1568 0x4005BB0: prepare_arr (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+  n0: 1568 0x4005F13: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 1568 0x4005FF5: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 1568 0x4006010: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n1: 1024 0x4A030BC: _IO_file_doallocate (in /usr/lib/libc.so.6)
+  n2: 1024 0x4A13105: _IO_doallocbuf (in /usr/lib/libc.so.6)
+   n1: 1024 0x4A11078: _IO_file_overflow (in /usr/lib/libc.so.6)
+    n1: 1024 0x4A11BAA: _IO_file_xsputn (in /usr/lib/libc.so.6)
+     n1: 1024 0x49DED65: ??? (in /usr/lib/libc.so.6)
+      n1: 1024 0x49DEE4B: ??? (in /usr/lib/libc.so.6)
+       n1: 1024 0x49EA684: ??? (in /usr/lib/libc.so.6)
+        n1: 1024 0x49DE4F2: printf (in /usr/lib/libc.so.6)
+         n0: 1024 0x4005E1C: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+   n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 536 0x4003EB5: init_bch (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+  n0: 536 0x4005DAD: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 24 in 6 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=13
+#-----------
+time=17768002
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=8320
+heap_tree=empty
+#-----------
+snapshot=14
+#-----------
+time=19650949
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=8336
+heap_tree=empty
+#-----------
+snapshot=15
+#-----------
+time=21021470
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=8320
+heap_tree=empty
+#-----------
+snapshot=16
+#-----------
+time=22733196
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=14552
+heap_tree=empty
+#-----------
+snapshot=17
+#-----------
+time=24280986
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16616
+heap_tree=empty
+#-----------
+snapshot=18
+#-----------
+time=25518579
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=12984
+heap_tree=empty
+#-----------
+snapshot=19
+#-----------
+time=27066783
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=10960
+heap_tree=detailed
+n6: 6288 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1568 0x4005BB0: prepare_arr (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+  n0: 1568 0x4005F13: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 1568 0x4005FF5: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 1568 0x4006010: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n1: 1024 0x4A030BC: _IO_file_doallocate (in /usr/lib/libc.so.6)
+  n2: 1024 0x4A13105: _IO_doallocbuf (in /usr/lib/libc.so.6)
+   n1: 1024 0x4A11078: _IO_file_overflow (in /usr/lib/libc.so.6)
+    n1: 1024 0x4A11BAA: _IO_file_xsputn (in /usr/lib/libc.so.6)
+     n1: 1024 0x49DED65: ??? (in /usr/lib/libc.so.6)
+      n1: 1024 0x49DEE4B: ??? (in /usr/lib/libc.so.6)
+       n1: 1024 0x49EA684: ??? (in /usr/lib/libc.so.6)
+        n1: 1024 0x49DE4F2: printf (in /usr/lib/libc.so.6)
+         n0: 1024 0x4005E1C: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+   n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 536 0x4003EB5: init_bch (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+  n0: 536 0x4005DAD: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 24 in 6 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=20
+#-----------
+time=28304886
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=8320
+heap_tree=empty
+#-----------
+snapshot=21
+#-----------
+time=29851937
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=10408
+heap_tree=empty
+#-----------
+snapshot=22
+#-----------
+time=31090122
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=14640
+heap_tree=empty
+#-----------
+snapshot=23
+#-----------
+time=32018251
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=10408
+heap_tree=empty
+#-----------
+snapshot=24
+#-----------
+time=33565612
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=8272
+heap_tree=empty
+#-----------
+snapshot=25
+#-----------
+time=34494352
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=8320
+heap_tree=empty
+#-----------
+snapshot=26
+#-----------
+time=35733361
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=13024
+heap_tree=empty
+#-----------
+snapshot=27
+#-----------
+time=37280663
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=17256
+heap_tree=empty
+#-----------
+snapshot=28
+#-----------
+time=39238724
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16704
+heap_tree=empty
+#-----------
+snapshot=29
+#-----------
+time=40268590
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16704
+heap_tree=detailed
+n6: 6288 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1568 0x4005BB0: prepare_arr (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+  n0: 1568 0x4005F13: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 1568 0x4005FF5: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 1568 0x4006010: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n1: 1024 0x4A030BC: _IO_file_doallocate (in /usr/lib/libc.so.6)
+  n2: 1024 0x4A13105: _IO_doallocbuf (in /usr/lib/libc.so.6)
+   n1: 1024 0x4A11078: _IO_file_overflow (in /usr/lib/libc.so.6)
+    n1: 1024 0x4A11BAA: _IO_file_xsputn (in /usr/lib/libc.so.6)
+     n1: 1024 0x49DED65: ??? (in /usr/lib/libc.so.6)
+      n1: 1024 0x49DEE4B: ??? (in /usr/lib/libc.so.6)
+       n1: 1024 0x49EA684: ??? (in /usr/lib/libc.so.6)
+        n1: 1024 0x49DE4F2: printf (in /usr/lib/libc.so.6)
+         n0: 1024 0x4005E1C: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+   n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 536 0x4003EB5: init_bch (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+  n0: 536 0x4005DAD: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 24 in 6 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=30
+#-----------
+time=41297894
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=14632
+heap_tree=empty
+#-----------
+snapshot=31
+#-----------
+time=42327319
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=10960
+heap_tree=empty
+#-----------
+snapshot=32
+#-----------
+time=43357710
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=17256
+heap_tree=empty
+#-----------
+snapshot=33
+#-----------
+time=44902456
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=14552
+heap_tree=empty
+#-----------
+snapshot=34
+#-----------
+time=45932087
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16616
+heap_tree=empty
+#-----------
+snapshot=35
+#-----------
+time=46961424
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=10920
+heap_tree=empty
+#-----------
+snapshot=36
+#-----------
+time=47991046
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=17256
+heap_tree=empty
+#-----------
+snapshot=37
+#-----------
+time=49020427
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=14552
+heap_tree=empty
+#-----------
+snapshot=38
+#-----------
+time=50050742
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=10328
+heap_tree=empty
+#-----------
+snapshot=39
+#-----------
+time=51080614
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=8320
+heap_tree=empty
+#-----------
+snapshot=40
+#-----------
+time=52110592
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16616
+heap_tree=empty
+#-----------
+snapshot=41
+#-----------
+time=54169231
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=14640
+heap_tree=empty
+#-----------
+snapshot=42
+#-----------
+time=55713798
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=17256
+heap_tree=detailed
+n6: 6288 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1568 0x4005BB0: prepare_arr (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+  n0: 1568 0x4005F13: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 1568 0x4005FF5: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 1568 0x4006010: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n1: 1024 0x4A030BC: _IO_file_doallocate (in /usr/lib/libc.so.6)
+  n2: 1024 0x4A13105: _IO_doallocbuf (in /usr/lib/libc.so.6)
+   n1: 1024 0x4A11078: _IO_file_overflow (in /usr/lib/libc.so.6)
+    n1: 1024 0x4A11BAA: _IO_file_xsputn (in /usr/lib/libc.so.6)
+     n1: 1024 0x49DED65: ??? (in /usr/lib/libc.so.6)
+      n1: 1024 0x49DEE4B: ??? (in /usr/lib/libc.so.6)
+       n1: 1024 0x49EA684: ??? (in /usr/lib/libc.so.6)
+        n1: 1024 0x49DE4F2: printf (in /usr/lib/libc.so.6)
+         n0: 1024 0x4005E1C: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+   n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 536 0x4003EB5: init_bch (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+  n0: 536 0x4005DAD: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 24 in 6 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=43
+#-----------
+time=56743655
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16616
+heap_tree=empty
+#-----------
+snapshot=44
+#-----------
+time=58288107
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16696
+heap_tree=empty
+#-----------
+snapshot=45
+#-----------
+time=59832247
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16704
+heap_tree=empty
+#-----------
+snapshot=46
+#-----------
+time=60347834
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=14552
+heap_tree=empty
+#-----------
+snapshot=47
+#-----------
+time=61892733
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16616
+heap_tree=empty
+#-----------
+snapshot=48
+#-----------
+time=62922147
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16704
+heap_tree=empty
+#-----------
+snapshot=49
+#-----------
+time=63951549
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=15200
+heap_tree=empty
+#-----------
+snapshot=50
+#-----------
+time=64467220
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=13024
+heap_tree=empty
+#-----------
+snapshot=51
+#-----------
+time=64982826
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=12984
+heap_tree=empty
+#-----------
+snapshot=52
+#-----------
+time=65498512
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=10960
+heap_tree=empty
+#-----------
+snapshot=53
+#-----------
+time=66014101
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16704
+heap_tree=detailed
+n6: 6288 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1568 0x4005BB0: prepare_arr (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+  n0: 1568 0x4005F13: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 1568 0x4005FF5: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 1568 0x4006010: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n1: 1024 0x4A030BC: _IO_file_doallocate (in /usr/lib/libc.so.6)
+  n2: 1024 0x4A13105: _IO_doallocbuf (in /usr/lib/libc.so.6)
+   n1: 1024 0x4A11078: _IO_file_overflow (in /usr/lib/libc.so.6)
+    n1: 1024 0x4A11BAA: _IO_file_xsputn (in /usr/lib/libc.so.6)
+     n1: 1024 0x49DED65: ??? (in /usr/lib/libc.so.6)
+      n1: 1024 0x49DEE4B: ??? (in /usr/lib/libc.so.6)
+       n1: 1024 0x49EA684: ??? (in /usr/lib/libc.so.6)
+        n1: 1024 0x49DE4F2: printf (in /usr/lib/libc.so.6)
+         n0: 1024 0x4005E1C: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+   n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 536 0x4003EB5: init_bch (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+  n0: 536 0x4005DAD: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 24 in 6 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=54
+#-----------
+time=66529714
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=10960
+heap_tree=empty
+#-----------
+snapshot=55
+#-----------
+time=67046126
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16616
+heap_tree=empty
+#-----------
+snapshot=56
+#-----------
+time=67562351
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16616
+heap_tree=empty
+#-----------
+snapshot=57
+#-----------
+time=68078005
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=13024
+heap_tree=empty
+#-----------
+snapshot=58
+#-----------
+time=68594347
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=14552
+heap_tree=empty
+#-----------
+snapshot=59
+#-----------
+time=69109934
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=14632
+heap_tree=empty
+#-----------
+snapshot=60
+#-----------
+time=69625606
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=8336
+heap_tree=empty
+#-----------
+snapshot=61
+#-----------
+time=70141575
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16616
+heap_tree=empty
+#-----------
+snapshot=62
+#-----------
+time=70657170
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=14544
+heap_tree=empty
+#-----------
+snapshot=63
+#-----------
+time=71172815
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=8320
+heap_tree=detailed
+n6: 6288 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1568 0x4005BB0: prepare_arr (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+  n0: 1568 0x4005F13: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 1568 0x4005FF5: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 1568 0x4006010: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n1: 1024 0x4A030BC: _IO_file_doallocate (in /usr/lib/libc.so.6)
+  n2: 1024 0x4A13105: _IO_doallocbuf (in /usr/lib/libc.so.6)
+   n1: 1024 0x4A11078: _IO_file_overflow (in /usr/lib/libc.so.6)
+    n1: 1024 0x4A11BAA: _IO_file_xsputn (in /usr/lib/libc.so.6)
+     n1: 1024 0x49DED65: ??? (in /usr/lib/libc.so.6)
+      n1: 1024 0x49DEE4B: ??? (in /usr/lib/libc.so.6)
+       n1: 1024 0x49EA684: ??? (in /usr/lib/libc.so.6)
+        n1: 1024 0x49DE4F2: printf (in /usr/lib/libc.so.6)
+         n0: 1024 0x4005E1C: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+   n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 536 0x4003EB5: init_bch (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+  n0: 536 0x4005DAD: main (in /home/pwetuk/Documents/bmstu/kurs2/summer_practice/TestingErrorCorrectingCodes/obj/my_program)
+ n0: 24 in 6 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=64
+#-----------
+time=71688414
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=12992
+heap_tree=empty
+#-----------
+snapshot=65
+#-----------
+time=72204035
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=12984
+heap_tree=empty
+#-----------
+snapshot=66
+#-----------
+time=72719642
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16704
+heap_tree=empty
+#-----------
+snapshot=67
+#-----------
+time=73235778
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=16616
+heap_tree=empty
+#-----------
+snapshot=68
+#-----------
+time=73751367
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=10408
+heap_tree=empty
+#-----------
+snapshot=69
+#-----------
+time=74266957
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=8336
+heap_tree=empty
+#-----------
+snapshot=70
+#-----------
+time=74782598
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=13024
+heap_tree=empty
+#-----------
+snapshot=71
+#-----------
+time=75298188
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=12992
+heap_tree=empty
+#-----------
+snapshot=72
+#-----------
+time=75813795
+mem_heap_B=6288
+mem_heap_extra_B=64
+mem_stacks_B=14640
+heap_tree=empty

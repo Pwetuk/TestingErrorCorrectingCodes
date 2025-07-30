@@ -419,7 +419,7 @@ chien_test(){
     construct_locator_polynomial(&test_field, syndrome, 3, locator);
 
     int errors[MAX_DEGREE];
-    chien_search(&test_field, locator, 3, errors);
+    chien_search(&test_field, locator, 3, errors, 32);
 
     for(int i = 0; i < 3; ++i){
         result &= (errors[i] == true_errors[i]);   
@@ -440,10 +440,10 @@ decode_test(){
     
     decode_bch(bch, encoded, res);
     
-    uint64_t data = extended_polynomial_to_polynomial(bch->field, res), true_data = 45967;
+    uint64_t data = extended_polynomial_to_polynomial(bch->field, res), true_data = 22983;
 
 
-    result = (data == 22983);
+    result = (data == true_data);
     if(result != 1){
         printf("Decoding failed\n");
         printf("Data recovered: %lu, data original: %lu\n", data, true_data);

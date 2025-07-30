@@ -5,6 +5,7 @@ struct bch_code{
     int number_of_errors;
     int data_length;
     uint64_t generator[MAX_DEGREE];
+    uint64_t n;
 };
 
 void
@@ -17,7 +18,7 @@ void
 construct_locator_polynomial(struct finite_field* field, uint64_t* syndrome, int number_of_errors, uint64_t locator[MAX_DEGREE]);
 
 void
-chien_search(struct finite_field* field, uint64_t* locator, int number_of_errors, int* errors);
+chien_search(struct finite_field* field, uint64_t* locator, int number_of_errors, int* errors, uint64_t n);
 
 void
 fix_errors_in_bch_binary(uint64_t* codeword, int* errors_pos, int number_of_errors);

@@ -5,15 +5,15 @@
 #include <sys/resource.h>
 #include <math.h>
 
-#include "bch_tests.h"
+#include "bch_encode.h"
 
-#define PAGE_SIZE 1058
+#define PAGE_SIZE 512
 #define NUM_PAGES 1
 
 void
 put_error(uint64_t *arr, uint64_t len_arr){
     for(uint64_t i = 0; i < len_arr; ++i){
-        arr[i] ^= (1UL << (rand() % 31));
+        arr[i] ^= (1UL << (rand() % 16));
     }
 }
 
@@ -34,203 +34,109 @@ static uint64_t read_proc_jiffies(void) {
     return utime + stime;
 }
 
-int main(int argc, char** argv){
-    int tests_result = 0;
-    int was_testing = 1;
-    if(argc > 1 && strcmp(argv[1], "test") == 0){
-        tests_result = run_tests();
-    }else if(argc > 1 && strcmp(argv[1], "ttest") == 0){
-        tests_result = temp_tests();
-    }else{
-        was_testing = 0;
-    }
-
-    if(was_testing == 1){
-        if(tests_result == 1){
-            printf("All tests succeded\n");
-        }else{
-            printf("Something went wrong\n");
+uint64_t*
+prepare_arr(uint64_t input_arr[NUM_PAGES * PAGE_SIZE], int data_len, int *len_res){
+    printf("Dt_len: %d\n", data_len);
+    *len_res = NUM_PAGES * PAGE_SIZE * sizeof(uint64_t) / data_len + 1;
+    int pos = 0;
+    uint64_t *result = malloc(sizeof(uint64_t) * (*len_res));
+    uint64_t buff = 0, el;
+    int deg = 0;
+    for(uint64_t i = 0; i < NUM_PAGES * PAGE_SIZE; ++i){
+        el = input_arr[i];
+        for(size_t j = 0; j < sizeof(uint64_t); ++j){
+            if((el & 1) == 1){
+                buff += (1UL << deg);
+            }
+            ++deg;
+            if(deg >= data_len){
+                deg = 0;
+                result[pos] = buff;
+                ++pos;
+                buff = 0;
+                
+            }
+            el >>= 1;
         }
-        return 0;
     }
+    result[pos] = buff;
+    return result;
+}
 
-    struct bch_code* bch_test = init_bch(2, 5, 3, 0);
+void
+measure_bch(int p, int power, int t){
+    clock_t start = clock();
+    struct bch_code* bch_test = init_bch(p, power, t, 0);
+    clock_t end = clock();
+    double cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
+    printf("Init bch: %f seconds, %d\n", cpu_time_sec, 0);
     printf("Gen: %d\n", get_degree(bch_test->generator));
 
-    uint64_t to_encode, encoding_poly[MAX_DEGREE], encoded[MAX_DEGREE], decoded[MAX_DEGREE], to_decode, decoding_poly[MAX_DEGREE];
+    int len_res;
+    uint64_t to_encode, encoding_poly[MAX_DEGREE], encoded[MAX_DEGREE], decoded[MAX_DEGREE], to_decode, decoding_poly[MAX_DEGREE], temp;
     memset(encoding_poly, 0, MAX_DEGREE * sizeof(uint64_t));
+    memset(decoding_poly, 0, MAX_DEGREE * sizeof(uint64_t));
 
-    uint64_t input_arr[PAGE_SIZE * NUM_PAGES], encoded_arr[PAGE_SIZE * NUM_PAGES], decoded_arr[PAGE_SIZE * NUM_PAGES];
-
+    uint64_t input_arr[PAGE_SIZE * NUM_PAGES], *encoded_arr, *decoded_arr;
     for(int i = 0; i < PAGE_SIZE * NUM_PAGES; ++i){
         input_arr[i] = (((uint64_t) rand() << 32) | (uint64_t) rand()) % (1UL << (bch_test->data_length - 1));
     }
+    
+    start = clock();
+    uint64_t *prepared = prepare_arr(input_arr, bch_test->data_length, &len_res);
+    end = clock();
+    cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
+    printf("Normalize data: %f seconds, %d\n", cpu_time_sec, 0);
+
+    encoded_arr = malloc(sizeof(uint64_t) * len_res);
+    decoded_arr = malloc(sizeof(uint64_t) * len_res);
 
     uint64_t sys1 = read_total_jiffies(), proc1 = read_proc_jiffies();
-    printf("%lu\n", sys1);
-    clock_t start = clock();
-    for(int i = 0; i < PAGE_SIZE * NUM_PAGES; ++i){
-        to_encode = input_arr[i];
+    start = clock();
+
+    for(int i = 0; i < len_res; ++i){
+        to_encode = prepared[i];
         for(int i = 0; i < bch_test->data_length; ++i){
             encoding_poly[i] = to_encode % bch_test->field->characteristic;
             to_encode >>= 1;
         }
-        //printf("Enc poly: ");
-        //print_extended_polynomial(encoding_poly);
         encode_bch(bch_test, encoding_poly, encoded);
         encoded_arr[i] = extended_polynomial_to_polynomial(bch_test->field, encoded);
     }
-    clock_t end = clock();
-    uint64_t sys2 = read_total_jiffies(), proc2 = read_proc_jiffies();
-    double cpu_pct = 100.0 * (proc2 - proc1) / (double)(sys2 - sys1);
-    printf("Process CPU load: %.2f%%\n", cpu_pct);
-    double cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
-    printf("Encoded: %f seconds\n", cpu_time_sec);
+    end = clock();
+    cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
+    printf("Encoded: %f seconds, %d\n", cpu_time_sec, 0);
 
-
-    for(int i = 0; i <= 3; ++i){
-        memset(decoding_poly, 0, MAX_DEGREE * sizeof(uint64_t));
-        sys1 = read_total_jiffies(), proc1 = read_proc_jiffies();
+    for(int n = 0; n <= bch_test->number_of_errors; ++n){
         start = clock();
-        for(int j = 0; j < PAGE_SIZE * NUM_PAGES; ++j){
-            to_decode = encoded_arr[j];
-            for(int k = 0; k < 32 - 1; ++k){
-                decoding_poly[k] = to_decode & 1;
+        for(int i = 0; i < len_res; ++i){
+            to_decode = encoded_arr[i];
+            for(int i = 0; i < bch_test->n; ++i){
+                decoding_poly[i] = to_decode % bch_test->field->characteristic;
                 to_decode >>= 1;
             }
             decode_bch(bch_test, decoding_poly, decoded);
-            decoded_arr[j] = extended_polynomial_to_polynomial(bch_test->field, decoded);
+            decoded_arr[i] = extended_polynomial_to_polynomial(bch_test->field, decoded);
+            if(decoded_arr[i] != prepared[i]) printf("PANIC");
         }
         end = clock();
-        sys2 = read_total_jiffies(), proc2 = read_proc_jiffies();
-        cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
-        printf("Decoded %f seconds with %d errors\n", cpu_time_sec, i);
-        cpu_pct = 100.0 * (proc2 - proc1) / (double)(sys2 - sys1);
-        printf("Process CPU load: %.2f%%\n", cpu_pct);
-        int result = 1;
-        for(int ind = 0; ind < NUM_PAGES * PAGE_SIZE; ++ind){
-            result &= (decoded_arr[ind] == input_arr[ind]);
-            if(result != 1){
-                printf("%d, Decoded: %lu, Inputed: %lu, Encoded: %lu\n", ind, decoded_arr[ind], input_arr[ind], encoded_arr[ind]);
-                break;
-            }
-        }
-        printf("Result is %d\n", result);
-        printf("Encoded_arr[0]: %lu\n", encoded_arr[0]);
-        put_error(encoded_arr, PAGE_SIZE * NUM_PAGES);
+        double cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
+        printf("Decoded with %d errors: %f seconds\n", n, cpu_time_sec);
+        put_error(encoded_arr, len_res);
     }
     free_bch_code(bch_test);
-    /*
-    unsigned int characteristic;
-    uint64_t power;
-    uint64_t res_len, decoded_len;
-    int number_of_errors;
-    
-    
-    printf("Input characteristic, power, number of errors polynomial\n");
-    scanf("%u %lu %d", &characteristic, &power, &number_of_errors);
-    
-    clock_t start = clock();
-    struct bch_code* bch_test = init_bch(characteristic, power, number_of_errors, 0);
-    clock_t end = clock();
-    double cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
-    
-    printf("Inited bch:%f seconds, %lu\n", cpu_time_sec, find_primitive_in_power(bch_test->field, 1023));
-    print_extended_polynomial(bch_test->generator);
-    
-    uint64_t input_arr[PAGE_SIZE * NUM_PAGES];
-    
-    for(int i = 0; i < PAGE_SIZE * NUM_PAGES; ++i){
-        input_arr[i] = ((uint64_t) rand() << 32) | rand();
-    }
-    printf("\n");
-    uint64_t sys1 = read_total_jiffies(), proc1 = read_proc_jiffies();
-    start = clock();
-    uint64_t *encoded = bch_encode_arr(bch_test, input_arr, PAGE_SIZE * NUM_PAGES, &res_len);
-    end = clock();
-    uint64_t sys2 = read_total_jiffies(), proc2 = read_proc_jiffies();
-    double cpu_pct = 100.0 * (proc2 - proc1) / (double)(sys2 - sys1);
-    printf("Process CPU load: %.2f%%\n", cpu_pct);
-    
-    cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
-    printf("Encoded: %f seconds, %d\n", cpu_time_sec, res_len);
-    //printf("\n\n----------------------\n\n");
-    //for(int i = 0; i < NUM_PAGES * PAGE_SIZE; ++i){
-        //    uint64_t el = input_arr[i];
-        //    for(int j = 0; j < 64; ++j){
-            //        printf("%lu", el % 2);
-            //        el >>= 1;
-            //    }
-            //    
-            //}
-            //printf("\n\n----------------------\n\n");
-            
-            for(int i = 0; i < 2; ++i){
-                start = clock();
-                uint64_t *decoded = bch_decode_arr(bch_test, encoded, res_len, &decoded_len);
-                end = clock();
-                cpu_time_sec = 1000 * (double)(end - start) / CLOCKS_PER_SEC;
-                printf("Decoded %f seconds with %d errors\n", cpu_time_sec, i);
-                put_error(encoded, res_len);
-                int result = 1;
-                for(uint64_t i = 0; i < NUM_PAGES * PAGE_SIZE; ++i){
-                    result &= (decoded[i] == input_arr[i]);
-                    if(result == 0){
-                        printf("Expected: %lu, got %lu in ind: %lu\n", input_arr[i], decoded[i], i);
-                        break;
-                    }
-                }
-                
-                printf("Result is: %d\n", result);
-                
-                free(decoded);
-            }
-            
-    free(encoded);
-    */
-    /*
-    start = clock();
-    for(int i = 0; i < PAGE_SIZE * NUM_PAGES; ++i){
-        to_encode = input_arr[i];
-        to_encode_poly = construct_polynomial_from_field_element(bch_test->field, to_encode);
-    
-        struct extended_polynomial* result = encode_bch(bch_test, to_encode_poly);
-        input_arr[i] = extended_polynomial_to_polynomial(bch_test->field, result);
-        free_extended_polynomial(result);
-    }
-    end = clock();
-    cpu_time_sec = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("Encoded: %f seconds\n", cpu_time_sec);
+    free(prepared);
+    free(encoded_arr);
+    free(decoded_arr);
+}
 
-    uint64_t to_decode;
-
-    for(int num_err = 0; num_err < number_of_errors; ++num_err){
-        
-        start = clock();
-        for(int i = 0; i < PAGE_SIZE * NUM_PAGES; ++i){
-            to_encode = input_arr[i];
-            to_encode_poly = construct_polynomial_from_field_element(bch_test->field, to_encode + 1);
-        
-            decode_bch(bch_test, to_encode_poly);
-            free_extended_polynomial(to_encode_poly);
-        }
-        end = clock();
-        cpu_time_sec = (double)(end - start) / CLOCKS_PER_SEC;
-        printf("Decoded %f seconds with %d errors\n", cpu_time_sec, num_err);
-        
-        for(int i = 0; i < PAGE_SIZE * NUM_PAGES; ++i){
-            int err_pos = rand() % (bch_test->data_length + bch_test->generator->degree - 2);
-            input_arr[i] ^= (1ULL << err_pos);
-        }
-
-    }
-
+int main(int argc, char** argv){
     
     
-    struct rusage ru;
-    getrusage(RUSAGE_SELF, &ru);
-    printf("Peak memory usage: %ld\n", ru.ru_maxrss);
-    */
+    measure_bch(2, 5, 2);
+    measure_bch(2, 5, 3);
+    measure_bch(2, 6, 3);
+    
 
     return 0;
 }

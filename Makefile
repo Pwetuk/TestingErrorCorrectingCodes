@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Ipaths
+CFLAGS = -Wall -Wextra -Ipaths -fstack-usage
 OBj_DIR = obj
 
 OBJS = $(OBj_DIR)/finite_field.o $(OBj_DIR)/polynomials.o $(OBj_DIR)/main.o $(OBj_DIR)/bch_tests.o $(OBj_DIR)/bch_encode.o

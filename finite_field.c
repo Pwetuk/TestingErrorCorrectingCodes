@@ -136,7 +136,7 @@ check_if_irreducible(uint64_t possible_polynomial, uint64_t p, uint64_t m)
     bool result = 1;
     construct_polynomial_from_field_element(&check_field, possible_polynomial, possible_primitive);
     for(uint64_t i = 1; i < m; ++i){
-        get_polynomial_for_irruducuble(p, i, need_check_gcd);
+        get_polynomial_for_irreducible(p, i, need_check_gcd);
         get_degree(need_check_gcd);
         extended_euclidean_algorithm(&check_field, possible_primitive, 
         need_check_gcd, s0, t0, r0
@@ -154,7 +154,7 @@ check_if_irreducible(uint64_t possible_polynomial, uint64_t p, uint64_t m)
 
 
 void
-get_polynomial_for_irruducuble(uint64_t p, uint64_t d, uint64_t need_check_gcd[MAX_DEGREE])
+get_polynomial_for_irreducible(uint64_t p, uint64_t d, uint64_t need_check_gcd[MAX_DEGREE])
 {
     memset(need_check_gcd, 0, MAX_DEGREE * sizeof(uint64_t));
     need_check_gcd[1] = 1;
@@ -195,13 +195,6 @@ find_prime_divisors(uint64_t n, int *length)
     if (n % 2 == 0) {
         primes[count] = 2;
         ++count;
-        if(count >= size){
-            new_primes = malloc(sizeof(uint64_t) * size * 2);
-            memcpy(new_primes, primes, size);
-            size *= 2;
-            free(primes);
-            primes = new_primes;
-        }
         while (n % 2 == 0) {
             n >>= 1;
         }
@@ -211,13 +204,6 @@ find_prime_divisors(uint64_t n, int *length)
     for (uint64_t d = 3; d <= limit; d += 2) {
         if (n % d == 0) {
             primes[count] = d;
-            if(count >= size){
-                new_primes = malloc(sizeof(uint64_t) * size * 2);
-                memcpy(new_primes, primes, size);
-                size *= 2;
-                free(primes);
-                primes = new_primes;
-            }
             ++count;
             while (n % d == 0) {
                 n /= d;

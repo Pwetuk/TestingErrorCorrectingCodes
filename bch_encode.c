@@ -9,7 +9,7 @@
 void
 encode_bch(struct bch_code* bch_code_struct, uint64_t data[MAX_DEGREE], uint64_t result[MAX_DEGREE])
 {
-    uint64_t n = (1 << (bch_code_struct->field->power)) - 1, tmp[MAX_DEGREE];
+    uint64_t n = bch_code_struct->n - 1, tmp[MAX_DEGREE];
     memset(result, 0, sizeof(uint64_t) * MAX_DEGREE);
 
     memset(tmp, 0, MAX_DEGREE * sizeof(uint64_t));
@@ -18,15 +18,11 @@ encode_bch(struct bch_code* bch_code_struct, uint64_t data[MAX_DEGREE], uint64_t
     
     for(int i = 0; i <= deg_data; ++i){
         tmp[n - bch_code_struct->data_length + 1 + i] = data[i];
-//        printf("Smth: %lu\n", n - bch_code_struct->data_length + 1 + i);
     }
-//    printf("Data: ");
     uint64_t quotient[MAX_DEGREE], remainder[MAX_DEGREE];
     divide_polynomials_with_remainder(bch_code_struct->field, tmp, bch_code_struct->generator, quotient, remainder);
-//    print_extended_polynomial(tmp);
     
     difference_of_two_polynomials(bch_code_struct->field, tmp, remainder, result);
-//    print_extended_polynomial(result);
 }   
 
 void
@@ -37,33 +33,24 @@ decode_bch(struct bch_code* bch_code_struct, uint64_t message[MAX_DEGREE], uint6
     uint64_t syndrome[MAX_DEGREE];
     memset(syndrome, 0, MAX_DEGREE * sizeof(uint64_t));
     int is_null = calculate_syndrome(bch_code_struct->field, message, bch_code_struct->number_of_errors, syndrome);
-    /*
-    printf("Messg: ");
-    print_extended_polynomial(message);
-    print_extended_polynomial(syndrome);
-    */
+
 
 
     if(is_null == 1){
         construct_locator_polynomial(bch_code_struct->field, syndrome, bch_code_struct->number_of_errors, locator);
-        chien_search(bch_code_struct->field, locator, bch_code_struct->number_of_errors, errors_pos);
+        chien_search(bch_code_struct->field, locator, bch_code_struct->number_of_errors, errors_pos, bch_code_struct->n);
+        
         fix_errors_in_bch_binary(message, errors_pos, bch_code_struct->number_of_errors);
-    }else{
-        memcpy(result,
-               message + 16,
-               bch_code_struct->data_length * sizeof *result);
-        return;
     }
 
     memset(result, 0, MAX_DEGREE * sizeof(uint64_t));
     
     int result_deg = bch_code_struct->data_length;
-    int n = 32 - 1;
+    int n = bch_code_struct->n - 1;
     int messg_degree = get_degree(message);
     for(int i = 0; i < bch_code_struct->data_length; ++i){
         result[i] = message[n - result_deg + 1 + i];
     }
-    //print_extended_polynomial(result);
 }
 
 int
@@ -73,7 +60,7 @@ calculate_syndrome(struct finite_field* field, uint64_t encoded_message[MAX_DEGR
     int d = get_degree(encoded_message);
     uint64_t need_to_check = 2;
     for(int i = 0; i < 2 * number_of_errors; ++i){
-        syndrome[i] = find_value_from_root(field, encoded_message, i + 1, d, need_to_check);
+        syndrome[i] = find_value_from_root(field, encoded_message, d, need_to_check);
         if(syndrome[i] != 0){
             number_of_not_null = 1;
         }
@@ -136,12 +123,11 @@ construct_locator_polynomial(struct finite_field* field, uint64_t* syndrome, int
 }
 
 void
-chien_search(struct finite_field* field, uint64_t* locator, int number_of_errors, int* result)
+chien_search(struct finite_field* field, uint64_t* locator, int number_of_errors, int* result, uint64_t n)
 {
-
-    uint64_t n = 1 << field->power;
     uint64_t pos;
-    uint64_t need_to_check = construct_inverse_element_multiply(field, 2);
+    uint64_t need_to_check = 1;
+    uint64_t inversed_primitive = construct_inverse_element_multiply(field, 2);
     int err_pos = 0;
     int deg = get_degree(locator);
 
@@ -150,7 +136,7 @@ chien_search(struct finite_field* field, uint64_t* locator, int number_of_errors
 
     for(uint64_t i = 0; i < n - 1; ++i){
 
-        pos = find_value_from_root(field, locator, -i, deg, need_to_check);
+        pos = find_value_from_root(field, locator, deg, need_to_check);
         if(pos == 0){
             result[err_pos] = i;
             ++err_pos;
@@ -158,7 +144,7 @@ chien_search(struct finite_field* field, uint64_t* locator, int number_of_errors
                 break;
             }
         }
-        need_to_check = multiply_in_field(field, need_to_check, 2);
+        need_to_check = multiply_in_field(field, need_to_check, inversed_primitive);
     }
 }
 
@@ -189,7 +175,8 @@ init_bch(uint64_t p, uint64_t power, int number_of_errors, uint64_t primitive)
 
     to_return->number_of_errors = number_of_errors;
     construct_generator_polynomial(to_return->field, number_of_errors, to_return->generator);
-    to_return->data_length = pow(to_return->field->characteristic, to_return->field->power) - get_degree(to_return->generator) - 1;
+    to_return->n = pow(to_return->field->characteristic, to_return->field->power);
+    to_return->data_length = to_return->n - get_degree(to_return->generator) - 1;
     return to_return;
 }
 
@@ -198,106 +185,4 @@ free_bch_code(struct bch_code* bch_code_struct)
 {
     free(bch_code_struct->field);
     free(bch_code_struct);
-}
-
-
-uint64_t*
-bch_encode_arr(struct bch_code* bch, uint64_t* to_encode_arr, uint64_t to_encode_length, uint64_t *encoded_length)
-{
-    uint64_t el;
-    int ind = 0, threshold = 64, last_power = 0, not_encoded = 1;
-    *encoded_length = 0;
-    uint64_t size = 64;
-
-    uint64_t *result = calloc(size, sizeof(uint64_t)), *temp;
-
-    uint64_t encode_poly[MAX_DEGREE], encoded[MAX_DEGREE];
-
-    for(uint64_t i = 0; i < to_encode_length; ++i){
-        el = to_encode_arr[i];
-        for(int k = 0; (k < threshold) || ((ind != 0) && (i + 1 == to_encode_length)); ++k){
-            not_encoded = 1;
-            encode_poly[ind] = el % bch->field->characteristic;
-            el >>= 1;
-            ++ind;
-            if(ind >= bch->data_length){
-                not_encoded = 0;
-                encode_bch(bch, encode_poly, encoded);
-                
-                for(int j = 0; j < bch->data_length + get_degree(bch->generator) + 1; ++j){
-                    result[*encoded_length] += (1ULL << last_power) * encoded[j];
-                    ++last_power;
-                    if(last_power >= threshold){
-                        last_power = 0;
-                        ++(*encoded_length);
-                    }
-                    if(*encoded_length >= size){
-                        temp = calloc(size * 2, sizeof(uint64_t));
-                        if(temp == NULL){
-                            printf("NOT ALLOC'D\n");
-                            return NULL;
-                        }
-                        memcpy(temp, result, size * sizeof(uint64_t));
-                        size *= 2;
-                        free(result);
-                        result = temp;
-                    }
-                }
-                ind = 0;
-            }
-        }
-    }
-    *encoded_length += 1;
-    return result;
-}
-
-uint64_t*
-bch_decode_arr(struct bch_code* bch, uint64_t* to_decode_arr, uint64_t to_decode_length, uint64_t *decoded_length)
-{
-    uint64_t el, last_power = 0;
-    int threshold = 64;
-    int ind = 0;
-    *decoded_length = 0;
-    uint64_t size = 64;
-    int not_decoded = 1;
-
-    uint64_t *result = calloc(size, sizeof(uint64_t)), *temp;
-
-    uint64_t decode_poly[MAX_DEGREE], decoded[MAX_DEGREE];
-    memset(decode_poly, 0, MAX_DEGREE * sizeof(uint64_t));
-
-    for(uint64_t i = 0; i < to_decode_length; ++i){
-        el = to_decode_arr[i];
-        for(int k = 0; (k < threshold) || ((ind != 0) && (i + 1 == to_decode_length)); ++k){
-            not_decoded = 1;
-            decode_poly[ind] = el % bch->field->characteristic;
-            el >>= 1;
-            ++ind;
-            if(ind >= bch->data_length + get_degree(bch->generator)){
-                ind = 0;
-                decode_bch(bch, decode_poly, decoded);
-                for(int j = 0; j < bch->data_length; ++j){
-                    not_decoded = 0;
-                    result[*decoded_length] += (1ULL << last_power) * decoded[j];
-                    ++last_power;
-                    if(last_power >= (uint64_t)threshold){
-                        ++(*decoded_length);
-                        last_power = 0;
-                    }
-                    if(*decoded_length >= size){
-                        temp = calloc(size * 2, sizeof(uint64_t));
-                        if(temp == NULL){
-                            printf("NOT ALLOC'D\n");
-                            return NULL;
-                        }
-                        memcpy(temp, result, size * sizeof(uint64_t));
-                        size *= 2;
-                        free(result);
-                        result = temp;
-                    }
-                }
-            }
-        }
-    }
-    return result;
 }

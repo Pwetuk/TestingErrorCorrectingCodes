@@ -1,0 +1,10 @@
+finite_field.c:11:1:add_in_field	80	static
+finite_field.c:28:1:multiply_in_field	128	static
+finite_field.c:67:1:find_primitive_in_power	64	static
+finite_field.c:86:1:construct_inverse_element_add	80	static
+finite_field.c:103:1:get_primitive_polynomial	48	static
+finite_field.c:111:1:construct_gf_p_m	64	static
+finite_field.c:129:1:check_if_irreducible	2672	static
+finite_field.c:157:1:get_polynomial_for_irreducible	48	static
+finite_field.c:166:1:check_if_primitive	112	static
+finite_field.c:190:1:find_prime_divisors	64	static
