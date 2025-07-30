@@ -11,16 +11,12 @@ run_tests()
     return test_in_characteristics_2_first() &
         test_in_characteristics_2_second() &
         test_in_characteristics_2_third() &
-        //test_in_characteristics_n_first() &
-        //test_in_characteristics_n_second() &
-        //test_in_characteristics_n_third() &
         syndrom_test() &
         encode_test1() &
         inverse_test() &
         locator_test() &
         chien_test() &
         decode_test() &
-        //encode_test2() &
         1;
 }
 
@@ -39,16 +35,6 @@ temp_tests()
         printf("Test3\n");
         return 0;
     }
-    /*
-    if(temp_test4() != 1){
-        printf("Test4\n");
-        return 0;
-    }
-    if(temp_test5() != 1){
-        printf("Test1\n");
-        return 0;
-    }
-    */
     return 1;
 }
 
@@ -136,101 +122,6 @@ test_in_characteristics_2_third()
 
     return result;
 }
-
-/*
-int
-test_in_characteristics_n_first()
-{
-    struct finite_field test_field;
-    test_field.characteristic = 3;
-    test_field.power = 5;
-    test_field.primative_in_power_n = 25;
-
-    struct extended_polynomial true_answer;
-    needed_type coefficients[16] = {2, 2, 1, 2, 2, 1, 0, 2, 1, 1, 1, 1, 1, 0, 1, 1};
-    true_answer.degree = 16;
-    true_answer.coefs = coefficients;
-
-
-
-    struct extended_polynomial* test_result = construct_generator_polynomial(&test_field, 2);
-    int result = equal_polynomials(&true_answer, test_result);
-    
-    if(result != 1){
-        printf("Test n 1 failed\n");
-        print_extended_polynomial(test_result);
-        print_extended_polynomial(&true_answer);
-        printf("----------------------------\n");
-    }
-    
-    free_extended_polynomial(test_result);
-
-    return result;
-}
-
-
-int
-test_in_characteristics_n_second()
-{
-    struct finite_field test_field;
-    test_field.characteristic = 5;
-    test_field.power = 3;
-    test_field.primative_in_power_n = 4 + 15;
-
-    struct extended_polynomial true_answer;
-    needed_type coefficients[13] = {1, 0, 1, 0, 1, 3, 2, 4, 2, 1, 2, 4, 1};
-    true_answer.degree = 13;
-    true_answer.coefs = coefficients;
-
-
-
-    struct extended_polynomial* test_result = construct_generator_polynomial(&test_field, 2);
-    int result = equal_polynomials(&true_answer, test_result);
-    
-    if(result != 1){
-        printf("Test n 2 failed\n");
-        print_extended_polynomial(test_result);
-        print_extended_polynomial(&true_answer);
-        printf("----------------------------\n");
-    }
-    
-    free_extended_polynomial(test_result);
-
-    return result;
-
-}
-
-
-int
-test_in_characteristics_n_third()
-{
-    struct finite_field test_field;
-    test_field.characteristic = 7;
-    test_field.power = 4;
-    test_field.primative_in_power_n = 228;
-
-    struct extended_polynomial true_answer;
-    needed_type coefficients[17] = {4, 0, 0, 6, 4, 3, 5, 2, 6, 3, 4, 6, 0, 2, 4, 2, 1};
-    true_answer.degree = 17;
-    true_answer.coefs = coefficients;
-
-
-
-    struct extended_polynomial* test_result = construct_generator_polynomial(&test_field, 2);
-    int result = equal_polynomials(&true_answer, test_result);
-    
-    if(result != 1){
-        printf("Test n 3 failed\n");
-        print_extended_polynomial(test_result);
-        print_extended_polynomial(&true_answer);
-        printf("----------------------------\n");
-    }
-    
-    free_extended_polynomial(test_result);
-
-    return result;
-}
-*/
 
 int
 temp_test1()
@@ -452,24 +343,3 @@ decode_test(){
     free_bch_code(bch);
     return 1;
 }
-/*
-int
-encode_test2(){
-    struct bch_code bch;
-    struct finite_field* field = malloc(sizeof(struct finite_field));
-    field->characteristic = 2;
-    field->power = 4;
-    field->primative_in_power_n = 3;
-
-    bch.field = field;
-    bch.number_of_errors = 2;
-    bch.generator = construct_generator_polynomial(field, 2);
-    print_extended_polynomial(bch.generator);
-
-    bch.data_length = 16 - 1 - bch.generator->degree;
-
-    
-
-    return 1;
-}
-*/
