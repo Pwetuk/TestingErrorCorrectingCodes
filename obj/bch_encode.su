@@ -1,8 +1,0 @@
-bch_encode.c:10:1:encode_bch	1616	static
-bch_encode.c:29:1:decode_bch	1376	static
-bch_encode.c:57:1:calculate_syndrome	96	static
-bch_encode.c:75:1:construct_locator_polynomial	2176	static
-bch_encode.c:126:1:chien_search	112	static
-bch_encode.c:152:1:fix_errors_in_bch_binary	16	static
-bch_encode.c:163:1:init_bch	80	static
-bch_encode.c:184:1:free_bch_code	32	static

@@ -1,6 +1,0 @@
-main.c:14:1:put_error	48	static
-main.c:20:17:read_total_jiffies	64	static
-main.c:28:17:read_proc_jiffies	64	static
-main.c:38:1:prepare_arr	96	static
-main.c:67:1:measure_bch	6336	static
-main.c:137:5:main	32	static
